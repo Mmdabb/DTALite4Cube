@@ -1,18 +1,20 @@
-from user_input import scenario_gen
+class Scenario:
+    def __init__(self, scenario_index=0, year=2025, scenario_name='', activate=1):
+        self.scenario_index = scenario_index
+        self.year = year
+        self.scenario_name = scenario_name
+        self.activate = activate
 
-scenarios = []
+    def update_scenario(self, **kwargs):
+        updated_attributes = set()
+        for attribute, value in kwargs.items():
+            if hasattr(self, attribute):
+                setattr(self, attribute, value)
+                updated_attributes.add(attribute)
+            else:
+                print(f"Ignoring unknown attribute: {attribute}")
 
-# Define the scenarios as dictionaries
-for i in range(len(scenario_gen)):
-    scenario = {
-        'scenario_index': i,
-        'year': 2025,
-        'scenario_name': scenario_gen[i],
-        'activate': 0
-    }
-    
-    # Append the scenarios into a scenarios list
-    scenarios.append(scenario)
-
-# Add the scenarios list to the scenarios dictionary 
-scenario_dict = {'scenarios': scenarios}
+        not_updated_attributes = set(vars(self).keys()) - updated_attributes
+        for attribute in not_updated_attributes:
+            # add if attribue is None exit
+            print(f"Warning: {attribute} has not been updated and is set to: {getattr(self, attribute)}")

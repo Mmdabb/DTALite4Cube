@@ -574,12 +574,14 @@ def get_gmns_from_cube(shapefile_path):
     _outputNode(network, shapefile_path)
     _outputLink(network, shapefile_path)
 
+
 if __name__ == '__main__':
     start_time = time.process_time()
 
     capacity_adjustment = False
     district_id_assignment = True
-    cube_net_dir = r'C:\Users\mabbas10\Dropbox (ASU)\2. ASU\2. PhD\2. Projects\NVTA\3_Subarea_analysis\Python codes\test\dec 28-2023\cube_nets'
+    cube_net_dir = r'C:\Users\mabbas10\Dropbox (ASU)\2. ASU\2. PhD\2. Projects\NVTA\3_Subarea_analysis\Python ' \
+                   r'codes\test\dec 28-2023\cube_nets '
     # network_list = ['CMP001', 'FFX134_BD','FFX134_NB', 'FFX138_BD', 'FFX138_NB',
     #                'LDN029_BD', 'LDN029_NB', 'LDN033_BD', 'LDN033_NB', 'LDN034', 'MAN003', 'PWC040_BD', 'PWC040_NB']
 

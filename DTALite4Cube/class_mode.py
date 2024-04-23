@@ -1,24 +1,26 @@
-from user_input import modes, modes_dedicated, modes_person
+class Mode:
+    def __init__(self, mode_type=None, mode_type_index=None):
+        self.mode_type = mode_type
+        self.mode_type_index = mode_type_index
+        self.name = None
+        self.vot = None
+        self.meu = None
+        self.person_occupancy = None
+        self.headway_in_sec = 1.5
+        self.DTM_real_time_info_type = 0
+        self.activate = 1
 
-mode_types = []
+    def update_mode(self, **kwargs):
+        updated_attributes = set()
+        for attribute, value in kwargs.items():
+            if hasattr(self, attribute):
+                setattr(self, attribute, value)
+                updated_attributes.add(attribute)
+            else:
+                print(f"Ignoring unknown attribute: {attribute}")
 
-# Define the mode type as dictionaries
-for i in range(len(modes)):
-    mode = 'mode' + modes[i]
-    mode = {
-        'mode_type': modes[i],
-        'mode_type_index': i,
-        'name': modes[i],
-        'vot': 10,
-        'multimodal_dedicated_assignment_flag': modes_dedicated[i],
-        'person_occupancy': modes_person[i],
-        'headway_in_sec': 1.5,
-        'DTM_real_time_info_type': 0,
-        'activate': 1    
-    }
-
-    # Append the modes into a mode types list
-    mode_types.append(mode)
-
-# Add the mode types list to the mode types dictionary 
-mode_types_dict = {'mode_types': mode_types}
+        not_updated_attributes = set(vars(self).keys()) - updated_attributes
+        for attribute in not_updated_attributes:
+            if not {getattr(self, attribute)}:
+                # add if attribue is None exit
+                print(f"Warning: {attribute} has not been updated and is set to: {getattr(self, attribute)}")

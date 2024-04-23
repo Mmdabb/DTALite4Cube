@@ -1,5 +1,26 @@
-# Define the departure profiles as dictionaries
-departure_1 = {
+class DepartureProfile:
+    def __init__(self, departure_profile_defaults):
+        # self.departure_profile_defaults = departure_profile_defaults
+        for default_attribute, default_value in departure_profile_defaults.items():
+            setattr(self, default_attribute, default_value)
+
+    def update_profile(self, **kwargs):
+        updated_attributes = set()
+        for attribute, value in kwargs.items():
+            if hasattr(self, attribute):
+                setattr(self, attribute, value)
+                updated_attributes.add(attribute)
+            else:
+                print(f"Ignoring unknown attribute: {attribute}")
+
+        not_updated_attributes = set(vars(self).keys()) - updated_attributes
+        for attribute in not_updated_attributes:
+            # add if attribue is None exit
+            print(f"Warning: {attribute} has not been updated and is set to: {getattr(self, attribute)}")
+
+
+# Define the default profiles as dictionaries
+departure_profile_defaults = {
     "departure_time_profile_no": 1,
     "T0000": 0.000571,
     "T0005": 0.000571,
@@ -63,7 +84,6 @@ departure_1 = {
     "T0295": 0.001368,
     "T0300": 0.001587,
     "T0305": 0.001587,
-    "T0310": 0.001587,
     "T0310": 0.001587,
     "T0315": 0.00175,
     "T0320": 0.00175,
@@ -291,12 +311,3 @@ departure_1 = {
     "T1430": 0.000778,
     "T1435": 0.000778
 }
-
-# Append the departure profiles into a departure profile list
-departure_profile = []
-
-departure_profile.append(departure_1)
-
-# Add the departure profile list to the departure profile dictionary 
-departure_profile_dict = {}
-departure_profile_dict = {'departure_time_profile': departure_profile}

@@ -3,16 +3,7 @@ import os
 import shutil
 import pandas as pd
 import ruamel_yaml as yaml
-from class_basic import basic_dict
-from class_mode import mode_types_dict
-from class_scenario import scenario_dict
-from class_demand_period import demand_period_dict
-from class_demand_file import demand_file_dict
-from class_demand_subarea import demand_subarea_dict
-from class_sensor_data import sensor_data_dict
-from class_dtm import dtm_dict
-from class_departure_profile import departure_profile_dict
-from class_link_type import link_type_dict
+from class_setting import Settings
 from user_input import period_title, net_dir
 from cube2gmns import get_gmns_from_cube
 from omx2csv import get_gmns_demand_from_omx
@@ -37,6 +28,7 @@ def YAML_writer():
     with open('settings.yml', 'w') as file:
         yaml.dump(data, file, Dumper=yaml.RoundTripDumper)
 
+DTALite_assignment = 0
 
 # Read the network files
 net_files = os.listdir(net_dir)
@@ -81,23 +73,24 @@ for network in scenario_files:
         with open('settings.yml', 'w') as file:
             yaml.dump(config, file, Dumper=yaml.RoundTripDumper)
 
-        # Initialize DTALite parameters
-        df_link['lanes'] = df_link['lanes' + str(i + 1)]
-        df_link['VDF_plf'] = df_link['VDF_plf' + str(i + 1)]
-        df_link['VDF_cap'] = df_link['VDF_cap' + str(i + 1)]
-        df_link['VDF_alpha'] = df_link['VDF_alpha' + str(i + 1)]
-        df_link['VDF_beta'] = df_link['VDF_beta' + str(i + 1)]
-        df_link['link_type'] = df_link['link_type' + str(i + 1)]
-        df_link['vdf_code'] = df_link['vdf_code' + str(i + 1)]
+        if DTALite_assignment:
+            # Initialize DTALite parameters
+            df_link['lanes'] = df_link['lanes' + str(i + 1)]
+            df_link['VDF_plf'] = df_link['VDF_plf' + str(i + 1)]
+            df_link['VDF_cap'] = df_link['VDF_cap' + str(i + 1)]
+            df_link['VDF_alpha'] = df_link['VDF_alpha' + str(i + 1)]
+            df_link['VDF_beta'] = df_link['VDF_beta' + str(i + 1)]
+            df_link['link_type'] = df_link['link_type' + str(i + 1)]
+            df_link['vdf_code'] = df_link['vdf_code' + str(i + 1)]
 
-        # Run DTALite
-        os.system('DTALite_03_06_b_2024.exe')
+            # Run DTALite
+            os.system('DTALite_03_06_b_2024.exe')
 
-        # Rename the output files
-        period_name = '_' + period_title[i]
-        for file_name in output_files:
-            new_file_name = file_name.split('.')[0] + period_name + '.' + file_name.split('.')[1]
-            # Check if the file exists before renaming
-            if os.path.exists(file_name):
-                # os.rename(file_name, new_file_name)
-                shutil.copyfile(file_name, new_file_name)
+            # Rename the output files
+            period_name = '_' + period_title[i]
+            for file_name in output_files:
+                new_file_name = file_name.split('.')[0] + period_name + '.' + file_name.split('.')[1]
+                # Check if the file exists before renaming
+                if os.path.exists(file_name):
+                    # os.rename(file_name, new_file_name)
+                    shutil.copyfile(file_name, new_file_name)

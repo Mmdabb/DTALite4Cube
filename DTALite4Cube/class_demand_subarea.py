@@ -1,16 +1,22 @@
-# Define the demand subareas as dictionaries
-subarea_1 = {
-    'activate': 0,
-    'subarea_geometry': 'POLYGON ((-180 -90, 180 -90, 180 90, -180 90, -180 -90))',
-    'file_name': 'demand.csv',
-    'format_type': 'column'
-}
+class DemandSubarea:
+    def __init__(self, activate=0, subarea_geometry='POLYGON ((-180 -90, 180 -90, 180 90, -180 90, -180 -90))',
+                 file_name='demand.csv', format_type='column'):
+        self.activate = activate
+        self.subarea_geometry = subarea_geometry
+        self.file_name = file_name
+        self.format_type = format_type
 
-# Append the demand subareas into a demand subareas list
-demand_subareas = []
+    def update_demand_subarea(self, **kwargs):
+        updated_attributes = set()
+        for attribute, value in kwargs.items():
+            if hasattr(self, attribute):
+                setattr(self, attribute, value)
+                updated_attributes.add(attribute)
+            else:
+                print(f"Ignoring unknown attribute: {attribute}")
 
-demand_subareas.append(subarea_1)
+        not_updated_attributes = set(vars(self).keys()) - updated_attributes
+        for attribute in not_updated_attributes:
+            # add if attribue is None exit
+            print(f"Warning: {attribute} has not been updated and is set to: {getattr(self, attribute)}")
 
-# Add the demand subareas list to the demand subarea dictionary 
-demand_subarea_dict = {}
-demand_subarea_dict = {'demand_files_for_subarea': demand_subareas}

@@ -3,11 +3,11 @@ import pandas as pd
 # START OF ARGUMENTS
 
 # Network directory
-net_dir = r'C:\Users\mabbas10\Dropbox (ASU)\2. ASU\2. PhD\2. Projects\NVTA\3_Subarea_analysis\yaml'
+net_dir = r'LDN034_BD'
 
 # Assignment argument
-iteration = 1
-route = 1
+iteration = 10
+route = 0
 simu = 0
 UE_converge = 0.1
 
@@ -16,29 +16,14 @@ length = 'meter'
 speed = 'mph'
 
 # Demand period arguement
-period_title = ['am','md','pm','nt']
+period_title = ['am','md','pm']
 period_time = ['0800_0900','1100_1200','1600_1700','2100_2200']
 
 # Mode type argument
 modes = ['apv','com','hov2','hov3','sov','trk']
-modes_dedicated = [1,0,0,0,1,0]
-modes_person = [1,1,2,3,1,1]
-
-# Demand scale factor
-demand_scale_factor = 1
-
-# END OF ARGUMENTS
 
 
-# Demand file generation based on mode type and demand period
-demand_file = []
-demand_mode = []
-demand_title = []
-for mode in modes:
-    for title in period_title:
-        demand_mode.append(mode)
-        demand_title.append(title)
-        demand_file.append(mode + '_' + title + '.csv')
+
         
 # Scenario generation based on demand period
 scenario_gen = []
@@ -48,3 +33,13 @@ for title in period_title:
 # Link type generation
 df = pd.read_csv('link_type_NVTA.csv')
 
+#sensor data
+sensor_1 = {
+    'sensor_id': 1,
+    'from_node_id': 483,
+    'to_node_id': 481,
+    'demand_period': 'am',
+    'count': 3000.975,
+    'scenario_index': 0,
+    'activate': 0
+}
