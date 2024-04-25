@@ -56,7 +56,15 @@ def get_gmns_demand_from_omx(demand_dir, time_period_list):
             for lu in lane_uses:
                 m_file = myfile[p + '_' + lu.upper() + 's']
                 arr = np.array(m_file)
-                output = os.path.join(output_dir, lu + '_' + p.lower() + '.csv')
+                output_file_name = lu + '_' + p.lower() + '.csv'
+
+                # because modes are not dynamically updated across different scripts (demand file name should be
+                # consistent with modes list input by user and mode_type_input dict
+                if lu == 'hv2':
+                    output_file_name = 'hov2' + '_' + p.lower() + '.csv'
+                elif lu == 'hv3':
+                    output_file_name = 'hov3' + '_' + p.lower() + '.csv'
+                output = os.path.join(output_dir, output_file_name)
                 with open(output, 'a', newline='') as df:
                     f_csv = csv.writer(df)
                     f_csv.writerow(['o_zone_id', 'd_zone_id', 'volume'])

@@ -1,96 +1,55 @@
-# Modules
 import os
 import shutil
 import pandas as pd
-import ruamel_yaml as yaml
-from class_setting import Settings
-from user_input import period_title, net_dir
+from settings import Settings
 from cube2gmns import get_gmns_from_cube
 from omx2csv import get_gmns_demand_from_omx
+from user_input import period_title, period_time, net_dir
+from user_input import iteration, route, simu, UE_converge, length, speed
+from user_input import modes
 
-
-# YAML Generator function
-def YAML_writer():
-    # Merge all the classes to a single dataset
-    data = {}
-    data.update(basic_dict)
-    data.update(mode_types_dict)
-    data.update(scenario_dict)
-    data.update(demand_period_dict)
-    data.update(demand_file_dict)
-    data.update(demand_subarea_dict)
-    data.update(sensor_data_dict)
-    data.update(dtm_dict)
-    data.update(departure_profile_dict)
-    data.update(link_type_dict)
-
-    # Write into a YAML file
-    with open('settings.yml', 'w') as file:
-        yaml.dump(data, file, Dumper=yaml.RoundTripDumper)
-
-DTALite_assignment = 0
-
-# Read the network files
-net_files = os.listdir(net_dir)
-scenario_files = []
-
-for item in net_files:
-    # Check if the item is a directory, if yes, add to the list
-    full_path = os.path.join(net_dir, item)
-    if os.path.isdir(full_path):
-        scenario_files.append(item)
-
-# DTALite loop for each network and demand period   
 output_files = ['log.txt', 'summary_log.txt', 'link_performance.csv', 'route_assignment.csv', 'agent.csv',
                 'trajectory.csv']
+link_type_df = pd.read_csv('link_type_NVTA.csv')
+current_dir = os.path.dirname(os.path.realpath(__file__))
+network_path = os.path.join(current_dir, net_dir)
 
-# Network loop (Outer loop)
-for network in scenario_files:
-    network_path = os.path.join(net_dir, network)
+dtalite_assignment = True
+network_conversion = True
+demand_conversion = True
 
+if network_conversion:
     get_gmns_from_cube(network_path)
+
+if demand_conversion:
     get_gmns_demand_from_omx(network_path, period_title)
 
-    os.chdir(network_path)
+for time_period, period_time in zip(period_title, period_time):
 
-    # Read the link file
-    df_link = pd.read_csv('link.csv')
+    setting = Settings(time_period)
+    setting.update_dta_basic(iteration, route, simu, UE_converge, length, speed)
+    setting.update_mode(modes)
+    setting.update_scenario()
+    setting.update_demand_periods(period_time)
+    setting.update_demand_list(modes, time_period)
+    setting.update_demand_subarea()
+    setting.update_sensor_data()
+    setting.update_dtm()
+    setting.update_departure_profile()
+    setting.update_link_type(link_type_df)
+    setting.yaml_writer(period_time, network_path)
 
-    # Generate the YML setting file
-    YAML_writer()
+    if dtalite_assignment:
+        os.chdir(network_path)
+        shutil.copyfile(f'settings_{time_period}.yml', 'settings.yml')
 
-    # Demand period loop (Inner loop)
-    for i in range(len(period_title)):
+        # Run DTALite
+        os.system('DTALite_0416b_2024.exe')
 
-        # Activate/deactivate the scenario for the demand period in a loop
-        with open('settings.yml', 'r') as file:
-            config = yaml.safe_load(file)
-
-        if i != 0:
-            config['scenarios'][i - 1]['activate'] = 0
-        config['scenarios'][i]['activate'] = 1
-
-        with open('settings.yml', 'w') as file:
-            yaml.dump(config, file, Dumper=yaml.RoundTripDumper)
-
-        if DTALite_assignment:
-            # Initialize DTALite parameters
-            df_link['lanes'] = df_link['lanes' + str(i + 1)]
-            df_link['VDF_plf'] = df_link['VDF_plf' + str(i + 1)]
-            df_link['VDF_cap'] = df_link['VDF_cap' + str(i + 1)]
-            df_link['VDF_alpha'] = df_link['VDF_alpha' + str(i + 1)]
-            df_link['VDF_beta'] = df_link['VDF_beta' + str(i + 1)]
-            df_link['link_type'] = df_link['link_type' + str(i + 1)]
-            df_link['vdf_code'] = df_link['vdf_code' + str(i + 1)]
-
-            # Run DTALite
-            os.system('DTALite_03_06_b_2024.exe')
-
-            # Rename the output files
-            period_name = '_' + period_title[i]
-            for file_name in output_files:
-                new_file_name = file_name.split('.')[0] + period_name + '.' + file_name.split('.')[1]
-                # Check if the file exists before renaming
-                if os.path.exists(file_name):
-                    # os.rename(file_name, new_file_name)
-                    shutil.copyfile(file_name, new_file_name)
+        # Rename the output files
+        period_name = '_' + time_period
+        for file_name in output_files:
+            base_name, ext = os.path.splitext(file_name)
+            new_file_name = f"{base_name}{period_name}{ext}"
+            if os.path.exists(file_name):
+                shutil.copyfile(file_name, new_file_name)

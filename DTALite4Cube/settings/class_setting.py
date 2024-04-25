@@ -1,15 +1,15 @@
 import os
-from class_link_type import LinkType, link_type_defaults
-from class_basic import DtaBasics
-from class_demand_file import DemandFile
-from class_demand_subarea import DemandSubarea
-from class_demand_period import DemandPeriod
-from class_departure_profile import DepartureProfile, departure_profile_defaults
-from class_dtm import DTMs, dtm_defaults
-from class_scenario import Scenario
-from class_sensor_data import Sensor
-from class_mode import Mode
-from mode_type_input import mode_config_data
+from .class_link_type import LinkType, link_type_defaults
+from .class_basic import DtaBasics
+from .class_demand_file import DemandFile
+from .class_demand_subarea import DemandSubarea
+from .class_demand_period import DemandPeriod
+from .class_departure_profile import DepartureProfile, departure_profile_defaults
+from .class_dtm import DTMs, dtm_defaults
+from .class_scenario import Scenario
+from .class_sensor_data import Sensor
+from .class_mode import Mode
+from .mode_type_input import mode_config_data
 import yaml
 import logging
 
@@ -177,6 +177,7 @@ class Settings:
             yaml.dump(data, file, Dumper=yaml.SafeDumper, sort_keys=False)
 
         # Post-process the YAML file to add single quotes to the specified time_period (if start with 0!??)
+        # If period_time.startswith('0'):   should be placed here
         with open(yaml_file_path, 'r') as file:
             lines = file.readlines()
 
