@@ -1,18 +1,56 @@
-import os
+import os, sys
 import shutil
 import pandas as pd
 from settings import Settings
 from cube2gmns import get_gmns_from_cube
 from omx2csv import get_gmns_demand_from_omx
-from user_input import period_title, period_time, net_dir
-from user_input import iteration, route, simu, UE_converge, length, speed
-from user_input import modes
+
+dta_lite_wd = sys.argv[1]
+# START OF ARGUMENTS
+
+# Network directory
+# net_dir = r'LDN034_BD'
+net_dir = dta_lite_wd #r'C:\Users\mabbas10\Dropbox (ASU)\2. ASU\2. PhD\2. Projects\NVTA\3_Subarea_analysis\Python codes\nets_test\LDN034_BD'
+
+# Assignment argument
+iteration = 20
+route = 0
+simu = 0
+UE_converge = 0.1
+
+# Units arguement
+length = 'meter'
+speed = 'mph'
+
+# Demand period arguement
+period_title = ['am','md','pm', 'nt']
+period_time = ['0600_0900','0900_1500','1500_1900','1900_0600']
+
+# Mode type argument
+modes = ['apv', 'com', 'hov2', 'hov3', 'sov', 'trk']
+
+# Scenario generation based on demand period
+scenario_gen = []
+for title in period_title:
+    scenario_gen.append('scenario_' + title)
+
+# sensor data
+sensor_1 = {
+    'sensor_id': 1,
+    'from_node_id': 483,
+    'to_node_id': 481,
+    'demand_period': 'am',
+    'count': 3000.975,
+    'scenario_index': 0,
+    'activate': 0
+}
+
 
 output_files = ['log.txt', 'summary_log.txt', 'link_performance.csv', 'route_assignment.csv', 'agent.csv',
                 'trajectory.csv']
-link_type_df = pd.read_csv('link_type_NVTA.csv')
-current_dir = os.path.dirname(os.path.realpath(__file__))
-network_path = os.path.join(current_dir, net_dir)
+link_type_df = pd.read_csv(os.path.join(dta_lite_wd,'link_type_NVTA.csv'))
+current_dir = dta_lite_wd #os.path.dirname(os.path.realpath(__file__))
+network_path = dta_lite_wd #os.path.join(current_dir, net_dir)
 
 dtalite_assignment = True
 network_conversion = True
@@ -60,7 +98,7 @@ for time_period, period_time in zip(period_title, period_time):
                     pass
 
         # Run DTALite
-        os.system('DTALite_0416b_2024.exe')
+        os.system(os.path.join(dta_lite_wd, 'DTALite_0416b_2024.exe'))
 
         # Rename the output files
         period_name = '_' + time_period
