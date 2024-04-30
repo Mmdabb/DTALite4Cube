@@ -14,8 +14,9 @@ from .netconfig import alpha_dict, beta_dict, allowed_uses_dict, speed_class_dic
 
 
 def loadCSVfromSHP(shapefile_path):
-    print('Loading shapefile with geometry ...')
+    print(f'Loading shapefile - {shapefile_path}  with geometry ...')
     network_shapefile = gpd.read_file(shapefile_path)
+    network_shapefile['ID'] = range(1, len(network_shapefile)+1)
     # network_shapefile.plot()
     print('Shapefile loaded successfully.')
     return network_shapefile
