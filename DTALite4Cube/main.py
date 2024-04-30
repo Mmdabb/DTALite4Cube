@@ -16,10 +16,10 @@ network_path = os.path.join(current_dir, net_dir)
 
 dtalite_assignment = True
 network_conversion = True
-demand_conversion = True
+demand_conversion = False
 
 if network_conversion:
-    get_gmns_from_cube(network_path)
+    get_gmns_from_cube(network_path, district_id_assignment=True, capacity_adjustment=False)
 
 if demand_conversion:
     get_gmns_demand_from_omx(network_path, period_title)
@@ -42,6 +42,22 @@ for time_period, period_time in zip(period_title, period_time):
     if dtalite_assignment:
         os.chdir(network_path)
         shutil.copyfile(f'settings_{time_period}.yml', 'settings.yml')
+
+        if os.path.exists('link_qvdf.csv'):
+            if time_period == 'nt':  # For 'nt' period we don't have parameters for qvdf function
+                try:
+                    os.remove(f'link_qvdf_{time_period}.csv')
+                except OSError:
+                    try:
+                        os.rename('link_qvdf.csv', f'link_qvdf_{time_period}.csv')
+                    except OSError:
+                        # Handle renaming error here
+                        pass
+            else:
+                try:
+                    shutil.copyfile('link_qvdf_nt.csv', 'link_qvdf.csv')
+                except FileNotFoundError:
+                    pass
 
         # Run DTALite
         os.system('DTALite_0416b_2024.exe')

@@ -84,7 +84,7 @@ def _loadNodes(network_gmns, network_shapefile):
     print('%s nodes loaded successfully.' % len(node_id_list))
 
 
-def _loadLinks(network_gmns, network_shapefile, capacity_adjustment=False):
+def _loadLinks(network_gmns, network_shapefile):
     print('Loading links ...')
     # Define dtalite field mappings
     dtalite_field_mapping = Mapping(**dtalite_base_link_mapping)
@@ -372,6 +372,11 @@ def _loadLinks(network_gmns, network_shapefile, capacity_adjustment=False):
             # if t_vdf_beta: link.other_attrs['VDF_beta' + str(t_seq)] = float(t_vdf_beta)
 
         for field in other_fields:
+            link.other_attrs[field] = network_shapefile[field][index]
+
+        # Needed for post-processing
+        for t_seq, t_period in time_period_dict.items():
+            field = cube_timedep_field_mapping.get_field('limit_field', t_period)
             link.other_attrs[field] = network_shapefile[field][index]
 
         link_dict[link.link_id] = link
