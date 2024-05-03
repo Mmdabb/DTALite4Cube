@@ -8,12 +8,14 @@ import os, sys
 # import shutil
 import csv
 import time
+import re
 
 # location of all the dta lite runs
 catalog_dir = sys.argv[1]
 scenario_folders = sys.argv[2]
-scenario_folders_list = [scenario_folders.strip() for item in scenario_folders]
-
+scenario_folders = scenario_folders.split(',')
+scenario_folders_list = [item.strip() for item in scenario_folders]
+print(scenario_folders_list)
 
 def creat_pair_net(net_list):
     organized_data = {}
@@ -42,9 +44,12 @@ if __name__ == "__main__":
 
     parent_dir = catalog_dir
     
-    sub_net_list = [item for item in os.listdir(parent_dir) if
+    sub_nets = [item for item in os.listdir(parent_dir) if
                     os.path.isdir(os.path.join(parent_dir, item)) and not "statistics" in item]
-    sub_net_list = [x for x in sub_net_list if re.match(scenario_folders_list, x)]
+    sub_net_list =  []
+    for nets in sub_nets:
+        if nets in scenario_folders_list:
+           sub_net_list.append(nets) 
     print(sub_net_list)
     
     new_net_list = creat_pair_net(sub_net_list)
@@ -65,8 +70,8 @@ if __name__ == "__main__":
             if len(pair) > 1:
                 bd_net = pair[0]
                 nb_net = pair[1]
-                bd_net_dir = os.path.join(parent_dir, 'Outputs\DTALite', bd_net)
-                nb_net_dir = os.path.join(parent_dir, 'Outputs\DTALite', nb_net)
+                bd_net_dir = os.path.join(parent_dir, bd_net, 'Outputs', 'DTALite')
+                nb_net_dir = os.path.join(parent_dir, nb_net, 'Outputs', 'DTALite')
                 output_path = os.path.join(statistics_folder, f'{bd_net}_{nb_net}')
                 if not os.path.exists(output_path):
                     os.makedirs(output_path)
@@ -82,8 +87,8 @@ if __name__ == "__main__":
             if len(pair) > 1:
                 bd_net = pair[0]
                 nb_net = pair[1]
-                bd_net_dir = os.path.join(parent_dir, 'Outputs\DTALite', bd_net)
-                nb_net_dir = os.path.join(parent_dir, 'Outputs\DTALite', nb_net)
+                bd_net_dir = os.path.join(parent_dir, bd_net, 'Outputs', 'DTALite')
+                nb_net_dir = os.path.join(parent_dir, nb_net, 'Outputs', 'DTALite')
                 output_path = os.path.join(statistics_folder, f'{bd_net}_{nb_net}')
                 if not os.path.exists(output_path):
                     os.makedirs(output_path)
