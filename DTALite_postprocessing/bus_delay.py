@@ -180,16 +180,3 @@ def creat_pair_net(net_list):
     final_list = [value if len(value) > 1 else value[0] for value in organized_data.values()]
     return final_list
 
-
-if __name__ == "__main__":
-    period_length_dict = {'am': 3, 'md': 6, 'pm': 4, 'nt': 11, 'pm_r': 4}
-    time_periods = ['am', 'md', 'pm']
-
-    net_dir = r'C:\Users\mabbas10\Dropbox (ASU)\2. ASU\2. PhD\2. Projects\NVTA\3_Subarea_analysis\Python codes\nets_test'
-    regional_transit_stats_path = r'C:\Users\mabbas10\Dropbox (ASU)\2. ASU\2. PhD\2. Projects\NVTA\3_Subarea_analysis\Python codes\DTALite4Cube\DTALite4Cube\transit_regional_assignment'
-
-    sub_net_list = [item for item in os.listdir(net_dir) if
-                    os.path.isdir(os.path.join(net_dir, item)) and item != "statistics"]
-    net_pair_list = creat_pair_net(sub_net_list)
-
-    get_bus_delay(net_pair_list, time_periods, net_dir, regional_transit_stats_path)

@@ -36,7 +36,7 @@ def perf_based_stat(time_periods, parent_dir, net_list):
         for sub_net in subnet_list:
             print("network = ", sub_net)
 
-            net_dir = os.path.join(parent_dir, f'{sub_net}')
+            net_dir = os.path.join(parent_dir, f'{sub_net}\Outputs\DTALite')
             link_net = pd.read_csv(os.path.join(net_dir, 'link.csv'))
 
             pair_taz_dict = dict(zip(link_net.pair, link_net.TAZ))
@@ -251,23 +251,3 @@ def creat_pair_net(net_list):
 
     final_list = [value[0] for value in organized_data.values()]
     return final_list
-
-
-if __name__ == "__main__":
-    start = time.process_time()
-
-    time_periods = ['am', 'md', 'pm']
-    # time_periods = ['pmr']
-
-    parent_dir = r'C:\Users\mabbas10\Dropbox (ASU)\2. ASU\2. PhD\2. Projects\NVTA\3_Subarea_analysis\Python codes\nets_test'
-    # sub_net_list = ['CMP001', 'FFX134_BD','FFX134_NB', 'FFX138_BD', 'FFX138_NB',
-    #               'LDN029_BD', 'LDN029_NB', 'LDN033_BD', 'LDN033_NB', 'LDN034', 'MAN003', 'PWC040_BD', 'PWC040_NB']
-
-    sub_net_list = [item for item in os.listdir(parent_dir) if
-                    os.path.isdir(os.path.join(parent_dir, item)) and not "statistics" in item]
-    new_net_list = creat_pair_net(sub_net_list)
-
-    perf_based_stat(time_periods, parent_dir, sub_net_list)
-
-    end = time.process_time()
-    print('Total Running time: %s Seconds' % (end - start))

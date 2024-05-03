@@ -330,38 +330,3 @@ def creat_pair_net(net_list):
 
     final_list = [value if len(value) > 1 else value[0] for value in organized_data.values()]
     return final_list
-
-
-if __name__ == "__main__":
-
-    period_length_dict = {'am': 3, 'md': 6, 'pm': 4, 'nt': 11, 'pm_r': 4}
-    time_periods = ['am', 'md', 'pm']
-    # time_periods = ['pmr']
-
-    parent_dir = r'C:\Users\mabbas10\Dropbox (ASU)\2. ASU\2. PhD\2. Projects\NVTA\3_Subarea_analysis\Python codes\nets_test'
-
-    statistics_folder = os.path.join(parent_dir, "statistics")
-    if not os.path.exists(statistics_folder):
-        os.makedirs(statistics_folder)
-
-    # sub_net_list = ['CMP001', 'FFX134_BD','FFX134_NB', 'FFX138_BD', 'FFX138_NB',
-    #               'LDN029_BD', 'LDN029_NB', 'LDN033_BD', 'LDN033_NB', 'LDN034', 'MAN003', 'PWC040_BD', 'PWC040_NB']
-    sub_net_list = [item for item in os.listdir(parent_dir) if
-                    os.path.isdir(os.path.join(parent_dir, item)) and not "statistics" in item]
-
-    net_pair_list = creat_pair_net(sub_net_list)
-
-    for pair in net_pair_list:
-
-        if len(pair) > 1:
-
-            bd_net = pair[0]
-            nb_net = pair[1]
-            bd_net_dir = os.path.join(parent_dir, bd_net)
-            nb_net_dir = os.path.join(parent_dir, nb_net)
-
-            output_path = os.path.join(statistics_folder, f'{bd_net}_{nb_net}')
-            if not os.path.exists(output_path):
-                os.makedirs(output_path)
-
-            get_period_diff(time_periods, period_length_dict, output_path, nb_net_dir, bd_net_dir)
