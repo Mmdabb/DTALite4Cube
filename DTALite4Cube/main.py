@@ -10,7 +10,7 @@ dta_lite_wd = sys.argv[1]
 
 # Network directory
 # net_dir = r'LDN034_BD'
-net_dir = dta_lite_wd #r'C:\Users\mabbas10\Dropbox (ASU)\2. ASU\2. PhD\2. Projects\NVTA\3_Subarea_analysis\Python codes\nets_test\LDN034_BD'
+net_dir = dta_lite_wd
 
 # Assignment argument
 iteration = 20
@@ -54,7 +54,7 @@ network_path = dta_lite_wd #os.path.join(current_dir, net_dir)
 
 dtalite_assignment = True
 network_conversion = True
-demand_conversion = False
+demand_conversion = True
 
 if network_conversion:
     get_gmns_from_cube(network_path, district_id_assignment=True, capacity_adjustment=False)
