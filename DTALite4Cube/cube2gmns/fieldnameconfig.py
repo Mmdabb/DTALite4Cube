@@ -66,7 +66,17 @@ dtalite_base_link_mapping = {
 }
 # 'vdf_toll' is used for both 'vdf_toll{mode}' and 'vdf_toll{mode}{period_sequence}'
 #   vdf_parameter: ['alpha', 'beta', 'qdf', 'plf', 'cp', 'cd', 'n', 's']
+# dtalite_additional_link_mapping = {
+#     'vdf_toll': 'vdf_toll{mode}',
+#     'vdf_parameter': 'VDF_{qvdf_param}'
+# }
+
+
 dtalite_additional_link_mapping = {
-    'vdf_toll': 'vdf_toll{mode}',
+    'vdf_toll': 'VDF_toll{mode}',
+    'period_lanes': 'lanes{period_sequence}',
+    'period_free_speed': 'free_speed{period_sequence}',
+    'period_link_type': 'link_type{period_sequence}',
+    'period_vdf_code': 'vdf_code{period_sequence}',
     'vdf_parameter': 'VDF_{qvdf_param}'
 }

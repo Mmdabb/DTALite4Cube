@@ -150,7 +150,7 @@ def _loadNodes(network_gmns, network_shapefile):
     print('%s nodes loaded successfully.' % len(node_id_list))
 
 
-def _loadLinks(network_gmns, network_shapefile, time_period, time_period_list, vdf_dict, length_unit='mile'):
+def _loadLinks(network_gmns, network_shapefile, time_period, time_period_list, vdf_dict, length_unit='mile', dtalite_version_code='old'):
     print('Loading links ...')
     print(f'Time period: {time_period}')
     # Define dtalite field mappings
@@ -272,6 +272,8 @@ def _loadLinks(network_gmns, network_shapefile, time_period, time_period_list, v
             continue  # Skip the current link if it has 0 or fewer lanes
 
         link.lanes = lanes
+        dtalite_period_lanes_field = dtalite_dep_field_mapping.get_field('period_lanes', time_sequence)
+        link.other_attrs[dtalite_period_lanes_field] = lanes
 
         # Extract link geometry
         cube_geometry_field = cube_field_mapping.geometry_field
@@ -348,26 +350,42 @@ def _loadLinks(network_gmns, network_shapefile, time_period, time_period_list, v
             continue
 
         if length_unit == 'meter':
-            link.free_speed = int(free_speed) * 1609.34
+            link.free_speed = int(free_speed) * 1.60934
         elif length_unit == 'mile':
             link.free_speed = int(free_speed)
         else:
             sys.exit(f'ERROR: Invalid length unit ({length_unit}). It must be either "meter" or "mile".')
 
-        #   Adding QVDF parameters
-        if 'all' not in vdf_dict.keys():
-            vdf_dict['all'] = NVTA_qvdf_dict['all']
+        dtalite_period_freespd_field = dtalite_dep_field_mapping.get_field('period_free_speed', time_sequence)
+        link.other_attrs[dtalite_period_freespd_field] = link.free_speed
 
-        link_type_vdf_key = link_type if link_type in vdf_dict.keys() else 'all'
-        vdf_fields = ['alpha', 'beta', 'qdf', 'plf', 'cp', 'cd', 'n', 's']
+        if dtalite_version_code=='old':
+            vdf_fields = ['alpha', 'beta', 'plf']
+            vdf_key_prefix = 'VDF'
+        else:
+            vdf_fields = ['alpha', 'beta', 'qdf', 'plf', 'cp', 'cd', 'n', 's']
+            if 'all' not in vdf_dict.keys():
+                vdf_dict['all'] = NVTA_qvdf_dict['all']
+            vdf_key_prefix = 'QVDF'
+
+        link_type_vdf_key = str(link_type) if link_type else np.nan
         for vdf_field in vdf_fields:
-            vdf_key = f'QVDF_{vdf_field}{time_sequence}'
-            dtalite_field = dtalite_dep_field_mapping.get_field('vdf_parameter', vdf_field)
+            vdf_key = f'{vdf_key_prefix}_{vdf_field}{time_sequence}'
             try:
                 vdf_value = vdf_dict[link_type_vdf_key][vdf_key]
             except KeyError:
                 vdf_value = np.nan
-            link.other_attrs[dtalite_field] = float(vdf_value) if vdf_value else vdf_value
+
+            if vdf_field == 'plf':
+                vdf_plf = vdf_value
+
+            if dtalite_version_code=='old':
+                dtalite_vdf_field = vdf_key
+            else:
+                dtalite_vdf_field = dtalite_dep_field_mapping.get_field('vdf_parameter', vdf_field)
+
+            link.other_attrs[dtalite_vdf_field] = float(vdf_value) if vdf_value else vdf_value
+
 
         #   Extracting Allowed uses
         cube_limit_field = cube_timedep_field_mapping.get_field('limit_field', time_period.upper())
@@ -395,13 +413,31 @@ def _loadLinks(network_gmns, network_shapefile, time_period, time_period_list, v
             toll = 0
 
         for agent in toll_allowed_uses_set:  # Set all toll prices for all mode types to 0
-            link.other_attrs[str(agent)] = 0
+            if dtalite_version_code == 'old':
+                link.other_attrs[f'{agent}{time_sequence}'] = 0
+            else:
+                link.other_attrs[str(agent)] = 0
 
         if allowed_uses_key >= 0:
-            link.other_attrs[str('allowed_uses')] = allowed_uses
+            if dtalite_version_code == 'old':
+                link.other_attrs[f'VDF_allowed_uses{time_sequence}'] = allowed_uses
+            else:
+                link.other_attrs[str('allowed_uses')] = allowed_uses
             if allowed_uses_key < 6:
                 for allowed_agent in toll_allowed_uses_dict[allowed_uses_key]:
-                    link.other_attrs[str(allowed_agent)] = float(toll)
+                    if dtalite_version_code == 'old':
+                        link.other_attrs[f'{allowed_agent}{time_sequence}'] = float(toll)
+                    else:
+                        link.other_attrs[str(allowed_agent)] = float(toll)
+
+        if dtalite_version_code == 'old':
+            if free_speed > 0:
+                vdf_fftt = 60 * length_in_mile / free_speed
+
+            if vdf_fftt: link.other_attrs['VDF_fftt' + str(time_sequence)] = float(vdf_fftt)
+
+            vdf_cap = lanes * link.capacity / (vdf_plf if vdf_plf else 1)
+            link.other_attrs['VDF_cap' + str(time_sequence)] = float(vdf_cap) if vdf_cap else 0
 
         for field in other_fields:
             link.other_attrs[field] = network_shapefile[field][index]
@@ -592,7 +628,7 @@ def cap_adjustment(net_dir, time_period):
 
 
 def get_gmns_from_cube(shapefile_path, time_period_list, length_unit='mile',
-                       district_id_assignment=True, capacity_adjustment=False):
+                       district_id_assignment=True, capacity_adjustment=False, dtalite_version_code='old'):
     node_generation = True
     for time_period in time_period_list:
         if node_generation:
@@ -602,8 +638,18 @@ def get_gmns_from_cube(shapefile_path, time_period_list, length_unit='mile',
             _outputNode(network, shapefile_path)
             node_generation = False
 
-        vdf_dict = NVTA_qvdf_dict
-        _loadLinks(network, raw_network, time_period, time_period_list, vdf_dict, length_unit)
+        if dtalite_version_code == 'old':
+            link_bpr_dir = os.path.join(shapefile_path, 'link_bpr.csv')
+            if not os.path.exists(link_bpr_dir):
+                sys.exit(f'ERROR: "link_bpr.csv" not found. Please provide the file in the following location: \n'
+                         f'({os.path.abspath(shapefile_path)})')
+
+            vdf_bpr_dict = pd.read_csv(link_bpr_dir)  # Replace 'your_file.csv' with your actual file path
+            vdf_dict = vdf_bpr_dict.set_index('VDF_code').T.to_dict()
+        else:
+            vdf_dict = NVTA_qvdf_dict
+
+        _loadLinks(network, raw_network, time_period, time_period_list, vdf_dict, length_unit, dtalite_version_code)
         _outputLink(network, shapefile_path, time_period.lower())
 
         if district_id_assignment:

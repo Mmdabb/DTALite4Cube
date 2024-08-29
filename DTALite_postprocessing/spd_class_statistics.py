@@ -161,11 +161,13 @@ def statistics(bd_df, nb_df, am_sta_nb_df, am_sta_bd_df, period_name, period_len
 
 
 def getspdstat(output_path, nb_net, bd_net, time_periods, period_length_dict):
-    link_nb_df = pd.read_csv(os.path.join(nb_net, 'link.csv'))
-    link_bd_df = pd.read_csv(os.path.join(bd_net, 'link.csv'))
+
 
     for time_period in time_periods:
         period_length = period_length_dict.get(time_period)
+
+        link_nb_df = pd.read_csv(os.path.join(nb_net, f'link_{time_period}.csv'))
+        link_bd_df = pd.read_csv(os.path.join(bd_net, f'link_{time_period}.csv'))
 
         nb_df = pd.read_csv(os.path.join(nb_net, f'link_performance_{time_period}.csv'))
 

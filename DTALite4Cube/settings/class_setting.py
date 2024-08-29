@@ -70,7 +70,7 @@ class Settings:
         demand_periods = []
         demand_period = DemandPeriod(self.period, period_time)
         demand_periods.append(vars(demand_period))
-        self.demand_period_dict = {'demand_periods': demand_periods}
+        self.demand_period_dict = {'demand_period': demand_periods}
 
     def update_demand_subarea(self, input_demand_subarea=None):
         demand_subareas = []
@@ -78,7 +78,7 @@ class Settings:
         if input_demand_subarea:
             demand_subarea.update_demand_subarea(**input_demand_subarea)
         demand_subareas.append(vars(demand_subarea))
-        self.demand_subarea_dict = {'demand_files_for_subarea': demand_subareas}
+        self.demand_subarea_dict = {'subarea': demand_subareas}
 
     def update_departure_profile(self, input_departure_profile_dict=None):
         departure_profiles = []

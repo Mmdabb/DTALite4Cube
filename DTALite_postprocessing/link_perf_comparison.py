@@ -296,14 +296,14 @@ def get_period_diff(time_periods, period_length_dict, parent_dir, nb_net, bd_net
     bd_net_dir = os.path.join(parent_dir, f'{bd_net}')
     nb_net_dir = os.path.join(parent_dir, f'{nb_net}')
 
-    bd_link = pd.read_csv(os.path.join(bd_net_dir, 'link.csv'))
-    nb_link = pd.read_csv(os.path.join(nb_net_dir, 'link.csv'))
-
     print('NB network = %s' % (nb_net))
     print('BD network = %s' % (bd_net))
 
     for time_period in time_periods:
         period_length = period_length_dict.get(time_period)
+
+        bd_link = pd.read_csv(os.path.join(bd_net_dir, f'link_{time_period}.csv'))
+        nb_link = pd.read_csv(os.path.join(nb_net_dir, f'link_{time_period}.csv'))
 
         nb_link_perf = pd.read_csv(os.path.join(nb_net_dir, f'link_performance_{time_period}.csv'))
         bd_link_perf = pd.read_csv(os.path.join(bd_net_dir, f'link_performance_{time_period}.csv'))
