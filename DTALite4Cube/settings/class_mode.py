@@ -4,11 +4,8 @@ class Mode:
         self.mode_type_index = mode_type_index
         self.name = None
         self.vot = None
-        self.meu = None
         self.person_occupancy = None
-        self.headway_in_sec = 1.5
-        self.DTM_real_time_info_type = 0
-        self.activate = 1
+        self.pce = 1
 
     def update_mode(self, **kwargs):
         updated_attributes = set()

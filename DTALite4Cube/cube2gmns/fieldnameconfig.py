@@ -1,10 +1,17 @@
 # DO NOT MODIFY KEYs!!!!
 
+# time_period_dict = {
+#     1: 'AM',
+#     2: 'MD',
+#     3: 'PM',
+#     4: 'NT'
+# }
+
 time_period_dict = {
-    1: 'AM',
-    2: 'MD',
-    3: 'PM',
-    4: 'NT'
+    'AM': 1,
+    'MD': 2,
+    'PM': 3,
+    'NT': 4
 }
 
 # Field name mapping for cube node structure
@@ -21,7 +28,7 @@ cube_base_link_mapping = {
     'to_node_field': 'B',
     'geometry_field': 'geometry',
     'distance_field': 'DISTANCE',
-    'lane_field': '',
+    # 'lane_field': '',
     'area_type_field': 'ATYPE',
     'facility_type_field': 'FTYPE',
     'capacity_class': 'CAPCLASS',
@@ -58,12 +65,8 @@ dtalite_base_link_mapping = {
     'vdf_code': 'vdf_code',
 }
 # 'vdf_toll' is used for both 'vdf_toll{mode}' and 'vdf_toll{mode}{period_sequence}'
+#   vdf_parameter: ['alpha', 'beta', 'qdf', 'plf', 'cp', 'cd', 'n', 's']
 dtalite_additional_link_mapping = {
     'vdf_toll': 'vdf_toll{mode}',
-    'period_lanes': 'lanes{period_sequence}',
-    'period_free_speed': 'free_speed{period_sequence}',
-    'period_link_type': 'link_type{period_sequence}',
-    'period_vdf_code': 'vdf_code{period_sequence}',
-    'vdf_alpha': 'vdf_alpha',
-    'vdf_beta': 'vdf_beta'
+    'vdf_parameter': 'VDF_{qvdf_param}'
 }

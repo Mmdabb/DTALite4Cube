@@ -2,11 +2,16 @@ import logging
 
 
 class DtaBasics:
-    def __init__(self, iteration=1, route=0, simu=0, ue_converge=0.1, length='meter', speed='mph', memory_blocks=1):
+    def __init__(self, iteration=1, route=0, simu=0, ue_converge=0.1, length='meter', speed='mph',
+                 memory_blocks=1, column_updating=0, odme_activate=0):
 
         if not isinstance(iteration, int) or iteration < 1:
             logging.warning("Invalid value for 'iteration', using default value (20)")
             iteration = 20
+
+        if not isinstance(column_updating, int) or column_updating < 0:
+            logging.warning("Invalid value for 'column_updating', using default value (0)")
+            column_updating = 0
 
         if route not in {0, 1}:
             logging.warning("Invalid value for 'route', using default value (0)")
@@ -34,13 +39,12 @@ class DtaBasics:
 
         self.assignment = {
             'number_of_iterations': iteration,
+            'number_of_column_updating_iterations': column_updating,
             'route_output': route,
             'simulation_output': simu,
-            'UE_convergence_percentage': ue_converge
-        }
-
-        self.cpu = {
-            'number_of_memory_blocks': memory_blocks
+            'number_of_cpu_processors': memory_blocks,
+            'UE_convergence_percentage': ue_converge,
+            'odme_activate': odme_activate
         }
 
         self.unit = {

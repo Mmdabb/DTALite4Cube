@@ -1,4 +1,6 @@
 import os
+import sys
+
 from .class_link_type import LinkType, link_type_defaults
 from .class_basic import DtaBasics
 from .class_demand_file import DemandFile
@@ -13,12 +15,9 @@ from .mode_type_input import mode_config_data
 import yaml
 import logging
 
-class Settings:
-    def __init__(self, period=None, scenario_index=0):
 
-        if not isinstance(scenario_index, int):
-            scenario_index = 0
-            logging.warning(f"Invalid value for 'scenario_index', using default value {scenario_index}")
+class Settings:
+    def __init__(self, period=None):
 
         allowed_periods = {'am', 'md', 'pm', 'nt'}
         if period.lower() not in allowed_periods:
@@ -26,7 +25,6 @@ class Settings:
             logging.error(error_msg)
             raise ValueError(error_msg)
 
-        self.scenario_index = scenario_index
         self.period = period.lower()
         self.link_type_dict = {}
         self.basic_dict = {}
@@ -34,20 +32,7 @@ class Settings:
         self.demand_period_dict = {}
         self.demand_subarea_dict = {}
         self.departure_profile_dict = {}
-        self.dtm_dict = {}
-        self.scenario_dict = {}
-        self.sensor_data_dict = {}
         self.mode_types_dict = {}
-
-    def update_scenario(self, year=None, scenario_name=None):
-        if not scenario_name:
-            scenario_name = f'scenario_{self.period}'
-        if not year:
-            year = 2025
-        scenarios = []
-        scenario = Scenario(self.scenario_index, year, scenario_name)
-        scenarios.append(vars(scenario))
-        self.scenario_dict = {'scenarios': scenarios}
 
     def update_link_type(self, input_link_type_dataframe):
         input_link_type_dataframe.fillna('', inplace=True)
@@ -67,27 +52,23 @@ class Settings:
             link_types.append(vars(link_type))
         self.link_type_dict = {'link_types': link_types}
 
-    def update_dta_basic(self, iteration, route, simu, UE_converge, length, speed):
-        dta_basics = DtaBasics(iteration, route, simu, UE_converge, length, speed)
+    def update_dta_basic(self, iteration, route, simu, UE_converge, length, speed, memory_blocks):
+        dta_basics = DtaBasics(iteration, route, simu, UE_converge, length, speed, memory_blocks)
         self.basic_dict = vars(dta_basics)
 
     def update_demand_list(self, modes, period_time, demand_scale_factor=1):
         demand_files = []
         for index, mode_type in enumerate(modes):
             file_name = f"{mode_type}_{period_time}.csv"
-            demand_period = self.period
             mode_type = mode_type
             file_sequence_no = index + 1
-            demand_file = DemandFile(file_sequence_no, self.scenario_index, file_name, demand_period, mode_type,
-                                     demand_scale_factor)
+            demand_file = DemandFile(file_sequence_no, file_name, mode_type, demand_scale_factor)
             demand_files.append(vars(demand_file))
         self.demand_file_dict = {'demand_files': demand_files}
 
     def update_demand_periods(self, period_time):
         demand_periods = []
-        period_indices = {'am': 1, 'md': 2, 'pm': 3, 'nt': 4}
-        period_index = period_indices[self.period]
-        demand_period = DemandPeriod(self.period, period_index, period_time)
+        demand_period = DemandPeriod(self.period, period_time)
         demand_periods.append(vars(demand_period))
         self.demand_period_dict = {'demand_periods': demand_periods}
 
@@ -106,22 +87,6 @@ class Settings:
             departure_profile.update_profile(**input_departure_profile_dict)
         departure_profiles.append(vars(departure_profile))
         self.departure_profile_dict = {'departure_time_profile': departure_profiles}
-
-    def update_dtm(self, input_dtm_dict=None):
-        dtms = []
-        dtm = DTMs(dtm_defaults)
-        if input_dtm_dict:
-            dtm.update_dtm(**input_dtm_dict)
-        dtms.append(vars(dtm))
-        self.dtm_dict = {'dynamic_traffic_management_data': dtms}
-
-    def update_sensor_data(self, input_sensor_data_dict=None):
-        sensors_data = []
-        sensor_data = Sensor()
-        if input_sensor_data_dict:
-            sensor_data.update_sensor(**input_sensor_data_dict)
-        sensors_data.append(vars(sensor_data))
-        self.sensor_data_dict = {'sensor_data': sensors_data}
 
     def update_mode(self, modes):
         sov_index = None
@@ -159,14 +124,11 @@ class Settings:
         data = {}
         data.update(self.basic_dict)
         data.update(self.mode_types_dict)
-        data.update(self.scenario_dict)
         data.update(self.demand_period_dict)
         data.update(self.demand_file_dict)
         data.update(self.demand_subarea_dict)
-        data.update(self.sensor_data_dict)
-        data.update(self.dtm_dict)
-        data.update(self.departure_profile_dict)
         data.update(self.link_type_dict)
+        data.update(self.departure_profile_dict)
 
         # with open(f'settings_{self.period}.yml', 'w') as file:
         #     yaml.dump(data, file, Dumper=yaml.SafeDumper, sort_keys=False)

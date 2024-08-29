@@ -1,5 +1,4 @@
 class DemandPeriod:
-    def __init__(self, demand_period, demand_period_id, time_period):
-        self.demand_period = demand_period
-        self.demand_period_id = demand_period_id
+    def __init__(self, period, time_period):
+        self.period = period
         self.time_period = time_period
