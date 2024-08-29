@@ -35,14 +35,6 @@ def perf_based_stat(time_periods, parent_dir, net_list):
 
         for sub_net in subnet_list:
             print("network = ", sub_net)
-
-            net_dir = os.path.join(parent_dir, f'{sub_net}\Outputs\DTALite')
-            link_net = pd.read_csv(os.path.join(net_dir, 'link.csv'))
-
-            pair_taz_dict = dict(zip(link_net.pair, link_net.TAZ))
-            length_dict = dict(zip(link_net.pair, link_net.length_in_mile))
-            free_speed_dict = dict(zip(link_net.pair, link_net.free_speed))
-
             header_df = ['subarea', 'time_period', 'delay', 'person_delay', 'person_hour', 'person_mile', 'mile/hour',
                          'delay/hour',
                          'max_severe_congestion_duration', 'mean_severe_congestion_duration(normal avg)',
@@ -58,6 +50,13 @@ def perf_based_stat(time_periods, parent_dir, net_list):
             period_stat = []
             periods_to_numbers = {'am': 1, 'md': 2, 'pm': 3, 'nt': 4, 'pmr': 4}
             for periods in time_periods:
+
+                net_dir = os.path.join(parent_dir, f'{sub_net}\Outputs\DTALite')
+                link_net = pd.read_csv(os.path.join(net_dir, f'link_{periods}.csv'))
+
+                pair_taz_dict = dict(zip(link_net.pair, link_net.TAZ))
+                length_dict = dict(zip(link_net.pair, link_net.length_in_mile))
+                free_speed_dict = dict(zip(link_net.pair, link_net.free_speed))
 
                 print('time period = ', periods)
                 period_number = periods_to_numbers[periods]

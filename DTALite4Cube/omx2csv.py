@@ -73,6 +73,6 @@ def get_gmns_demand_from_omx(demand_dir, time_period_list):
                         for j in range(len(row)):
                             if row[j] > 0:
                                 f_csv.writerow([i + 1, j + 1, row[j]])
-
+            myfile.close()
             end = time.process_time()
             print('Total running time for %s: %s Seconds' % (p, end - start))

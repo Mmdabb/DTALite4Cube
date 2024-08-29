@@ -11,11 +11,12 @@ import time
 import re
 
 # location of all the dta lite runs
-catalog_dir = sys.argv[1]
-scenario_folders = sys.argv[2]
-scenario_folders = scenario_folders.split(',')
-scenario_folders_list = [item.strip() for item in scenario_folders]
-print(scenario_folders_list)
+# catalog_dir = sys.argv[1]
+# scenario_folders = sys.argv[2]
+catalog_dir = r'C:\Users\mabbas10\ASU Dropbox\Mohammad Abbasi\2. ASU\2. PhD\2. Projects\NVTA\test runs\run_results\08-29'
+# scenario_folders = scenario_folders.split(',')
+# scenario_folders_list = [item.strip() for item in scenario_folders]
+# print(scenario_folders_list)
 
 def creat_pair_net(net_list):
     organized_data = {}
@@ -43,14 +44,17 @@ if __name__ == "__main__":
     bus_delay_analysis = False
 
     parent_dir = catalog_dir
-    
-    sub_nets = [item for item in os.listdir(parent_dir) if
-                    os.path.isdir(os.path.join(parent_dir, item)) and not "statistics" in item]
-    sub_net_list =  []
-    for nets in sub_nets:
-        if nets in scenario_folders_list:
-           sub_net_list.append(nets) 
-    print(sub_net_list)
+
+    sub_net_list = [item for item in os.listdir(parent_dir) if
+                os.path.isdir(os.path.join(parent_dir, item)) and not "statistics" in item]
+
+    # sub_nets = [item for item in os.listdir(parent_dir) if
+    #                 os.path.isdir(os.path.join(parent_dir, item)) and not "statistics" in item]
+    # sub_net_list =  []
+    # for nets in sub_nets:
+    #     if nets in scenario_folders_list:
+    #        sub_net_list.append(nets)
+    # print(sub_net_list)
     
     new_net_list = creat_pair_net(sub_net_list)
 
