@@ -24,8 +24,8 @@ def time_period_duration(time_period_list, period_range_list):
     time_period_duration_dict = {}
     for period_title, time_range in zip(time_period_list, period_range_list):
         start_time_str, end_time_str = time_range.split('_')
-        start_time = convert_to_datetime(start_time_str)
-        end_time = convert_to_datetime(end_time_str)
+        start_time =  datetime.strptime(start_time_str, '%H%M')
+        end_time = datetime.strptime(end_time_str, '%H%M')
         time_duration = end_time - start_time
         if time_duration.days < 0:
             time_duration = time_duration + timedelta(days=1)
@@ -151,6 +151,10 @@ def _loadNodes(network_gmns, network_shapefile):
 
 
 def _loadLinks(network_gmns, network_shapefile, time_period, time_period_list, vdf_dict, length_unit='mile', dtalite_version_code='old'):
+
+    if dtalite_version_code == 'old':
+        length_unit = 'meter'
+
     print('Loading links ...')
     print(f'Time period: {time_period}')
     # Define dtalite field mappings
@@ -304,6 +308,7 @@ def _loadLinks(network_gmns, network_shapefile, time_period, time_period_list, v
             )
             FT = 0
 
+        link.other_attrs[cube_ft_field] = network_shapefile[cube_ft_field][index]
         link_type = 10 ** 2 * int(AT) + int(FT)
         link.link_type = link_type
         link.vdf_code = link_type
@@ -644,7 +649,7 @@ def get_gmns_from_cube(shapefile_path, time_period_list, length_unit='mile',
                 sys.exit(f'ERROR: "link_bpr.csv" not found. Please provide the file in the following location: \n'
                          f'({os.path.abspath(shapefile_path)})')
 
-            vdf_bpr_dict = pd.read_csv(link_bpr_dir)  # Replace 'your_file.csv' with your actual file path
+            vdf_bpr_dict = pd.read_csv(link_bpr_dir)
             vdf_dict = vdf_bpr_dict.set_index('VDF_code').T.to_dict()
         else:
             vdf_dict = NVTA_qvdf_dict
