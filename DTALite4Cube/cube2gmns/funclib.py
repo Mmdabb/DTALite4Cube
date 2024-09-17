@@ -644,7 +644,7 @@ def get_gmns_from_cube(shapefile_path, time_period_list, length_unit='mile',
                 sys.exit(f'ERROR: "link_bpr.csv" not found. Please provide the file in the following location: \n'
                          f'({os.path.abspath(shapefile_path)})')
 
-            vdf_bpr_dict = pd.read_csv(link_bpr_dir)  # Replace 'your_file.csv' with your actual file path
+            vdf_bpr_dict = pd.read_csv(link_bpr_dir)
             vdf_dict = vdf_bpr_dict.set_index('VDF_code').T.to_dict()
         else:
             vdf_dict = NVTA_qvdf_dict
