@@ -151,9 +151,11 @@ def _loadNodes(network_gmns, network_shapefile):
 
 
 def _loadLinks(network_gmns, network_shapefile, time_period, time_period_list, vdf_dict, length_unit='mile', dtalite_version_code='old'):
-
+    speed_unit = 'mph'
     if dtalite_version_code == 'old':
         length_unit = 'meter'
+        speed_unit = 'mph'
+
 
     print('Loading links ...')
     print(f'Time period: {time_period}')
@@ -354,9 +356,9 @@ def _loadLinks(network_gmns, network_shapefile, time_period, time_period_list, v
                 f'exist in the defined capacity classes. Skipping this link.')
             continue
 
-        if length_unit == 'meter':
+        if speed_unit == 'kph':
             link.free_speed = int(free_speed) * 1.60934
-        elif length_unit == 'mile':
+        elif speed_unit == 'mph':
             link.free_speed = int(free_speed)
         else:
             sys.exit(f'ERROR: Invalid length unit ({length_unit}). It must be either "meter" or "mile".')
