@@ -1,4 +1,4 @@
-from perf_based_stats import perf_based_stat
+from performance_summary_functions import get_performance_stats
 from link_perf_comparison import get_period_diff
 from spd_class_statistics import getspdstat
 from bus_delay import get_bus_delay
@@ -13,55 +13,29 @@ import re
 # location of all the dta lite runs
 # catalog_dir = sys.argv[1]
 # scenario_folders = sys.argv[2]
-catalog_dir = r'C:\Users\mabbas10\ASU Dropbox\Mohammad Abbasi\2. ASU\2. PhD\2. Projects\NVTA\test runs\run_results\08-29'
+catalog_dir = r'C:\Users\mabbas10\ASU Dropbox\Mohammad Abbasi\2. ASU\2. PhD\2. Projects\NVTA\test runs\run_results\09-17'
 # scenario_folders = scenario_folders.split(',')
 # scenario_folders_list = [item.strip() for item in scenario_folders]
+scenario_folders_list = ['BD1']
 # print(scenario_folders_list)
 
-def creat_pair_net(net_list):
-    organized_data = {}
 
-    for item in net_list:
-        name = item.rstrip('_BD').rstrip('_NB')
-        if name not in organized_data:
-            organized_data[name] = []
-            organized_data[name].append([item])
-
-        else:
-            organized_data[name][0].append(item)
-
-    final_list = [value[0] for value in organized_data.values()]
-    return final_list
+time_periods = ['am', 'md', 'pm', 'nt']
+time_period_duration_list = ['0600_0900', '0900_1500', '1500_1900', '1900_0600']
+period_length_dict = {'am': 3, 'md': 6, 'pm': 4, 'nt': 11}
 
 
 if __name__ == "__main__":
-
-    time_periods = ['am', 'md', 'pm', 'nt']
-    period_length_dict = {'am': 3, 'md': 6, 'pm': 4, 'nt': 11} 
     performance_stats = True
-    speed_class_stats = True
-    link_performance_comparison = True
+    speed_class_stats = False
+    link_performance_comparison = False
     bus_delay_analysis = False
 
-    parent_dir = catalog_dir
-
-    sub_net_list = [item for item in os.listdir(parent_dir) if
-                os.path.isdir(os.path.join(parent_dir, item)) and not "statistics" in item]
-
-    # sub_nets = [item for item in os.listdir(parent_dir) if
-    #                 os.path.isdir(os.path.join(parent_dir, item)) and not "statistics" in item]
-    # sub_net_list =  []
-    # for nets in sub_nets:
-    #     if nets in scenario_folders_list:
-    #        sub_net_list.append(nets)
-    # print(sub_net_list)
-    
-    new_net_list = creat_pair_net(sub_net_list)
-
-    print(new_net_list)
-
     if performance_stats:
-         perf_based_stat(time_periods, parent_dir, sub_net_list)
+        for scenario in scenario_folders_list:
+            network_path = os.path.join(catalog_dir, scenario, 'Outputs', 'DTALite')
+            get_performance_stats(network_path, time_periods, time_period_duration_list)
+
 
     if speed_class_stats:
         period_length_dict = {'am': 3, 'md': 6, 'pm': 4, 'nt': 11}
