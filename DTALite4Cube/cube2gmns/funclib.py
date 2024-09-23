@@ -150,8 +150,9 @@ def _loadNodes(network_gmns, network_shapefile):
     print('%s nodes loaded successfully.' % len(node_id_list))
 
 
-def _loadLinks(network_gmns, network_shapefile, time_period, time_period_list, vdf_dict, length_unit='mile', dtalite_version_code='old'):
-    speed_unit = 'mph'
+def _loadLinks(network_gmns, network_shapefile, time_period, time_period_list, vdf_dict, length_unit='mile',
+               speed_unit = 'mph', dtalite_version_code='old'):
+
     if dtalite_version_code == 'old':
         length_unit = 'meter'
         speed_unit = 'mph'

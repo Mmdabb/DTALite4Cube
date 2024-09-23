@@ -46,8 +46,8 @@ net_dir = r'C:\Users\mabbas10\ASU Dropbox\Mohammad Abbasi\2. ASU\2. PhD\2. Proje
 network_path = r'C:\Users\mabbas10\ASU Dropbox\Mohammad Abbasi\2. ASU\2. PhD\2. Projects\NVTA\test runs\run_results\09-17\BD1\Outputs\DTALite'
 
 dtalite_assignment = False
-network_conversion = False
-demand_conversion = False
+network_conversion = True
+demand_conversion = True
 
 if network_conversion:
     get_gmns_from_cube(network_path, period_titles, length,
