@@ -15,7 +15,7 @@ from omx2csv import get_gmns_demand_from_omx
 # net_dir = dta_lite_wd
 
 # Assignment argument
-iteration = 3
+iteration = 20
 route = 0
 simu = 0
 UE_converge = 0.1
@@ -45,9 +45,9 @@ net_dir = r'C:\Users\mabbas10\ASU Dropbox\Mohammad Abbasi\2. ASU\2. PhD\2. Proje
 # network_path = dta_lite_wd  # os.path.join(current_dir, net_dir)
 network_path = r'C:\Users\mabbas10\ASU Dropbox\Mohammad Abbasi\2. ASU\2. PhD\2. Projects\NVTA\test runs\run_results\09-17\BD1\Outputs\DTALite'
 
-dtalite_assignment = False
-network_conversion = True
-demand_conversion = True
+dtalite_assignment = True
+network_conversion = False
+demand_conversion = False
 
 if network_conversion:
     get_gmns_from_cube(network_path, period_titles, length,

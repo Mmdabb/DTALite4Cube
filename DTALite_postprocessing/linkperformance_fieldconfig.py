@@ -10,7 +10,7 @@ link_required_fields_mapping = {
 
 link_performance_fields_mapping = {
     'fftt': 'fftt',
-    'tt': 'travel_time',
+    'tt': 'tt',
     'speed': 'speed',
     'speed_ratio': 'speed_ratio',
     'person_volume': 'person_volume',

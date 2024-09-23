@@ -220,8 +220,8 @@ def link_performanc_preprocess(network_dir, time_period_list):
                                                for time_period in time_period_list
                                                if time_period in link_performance_csv_files], axis=0)
 
-        output_dir = os.path.join(network_dir, 'total_perf.csv')
-        #link_performance_combined.to_csv(output_dir, index=False)
+        output_dir = os.path.join(network_dir, 'link_performance_combined.csv')
+        link_performance_combined.to_csv(output_dir, index=False)
         print(f"Combined link performance data saved to: {output_dir}")
 
         return link_performance_combined
@@ -438,6 +438,9 @@ def performance_summary(link_performance_combined, network_dir, time_duration_di
     link_performance_combined['hov_person_delay'] = link_performance_combined['person_delay'].where(hov_flag_mask)
     link_performance_combined['hov_person_hour'] = link_performance_combined['person_hour'].where(hov_flag_mask)
     link_performance_combined['hov_person_mile'] = link_performance_combined['person_mile'].where(hov_flag_mask)
+
+    link_performance_combined_dir = os.path.join(network_dir, 'link_performance_combined_processed.csv')
+    link_performance_combined.to_csv(link_performance_combined_dir, index=False)
 
     aggregations = {
         'length': 'sum',
@@ -688,8 +691,9 @@ def performance_summary(link_performance_combined, network_dir, time_duration_di
                                'hov_delay', 'hov_person_delay',
                                'hov_person_mile', 'hov_mile_over_hour', 'hov_delay_over_hour']
     statistics_data = statistics_data[statistics_data_columns]
-    statistics_data.to_csv(os.path.join(network_dir, 'statistics_data.csv'), index=False)
-    print("Done.")
+    statistics_data_dir = os.path.join(network_dir, 'statistics_data.csv')
+    statistics_data.to_csv(statistics_data_dir, index=False)
+    print(f"Performance statistics saved to: {statistics_data_dir}")
 
 
 def get_performance_stats(network_path, time_period_list, time_period_duration_list):
