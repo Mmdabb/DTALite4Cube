@@ -20,17 +20,17 @@ route = 0
 simu = 0
 UE_converge = 0.1
 memory_blocks = 20
-scale_factor = 0.5
+scale_factor = 1
 # Units arguement
 length = 'mile'
 speed = 'mph'
 
 # Demand period arguement
-period_titles = ['am', 'md', 'pm', 'nt']
-period_times = ['0600_0900', '0900_1500', '1500_1900', '1900_0600']
+# period_titles = ['am', 'md', 'pm', 'nt']
+# period_times = ['0600_0900', '0900_1500', '1500_1900', '1900_0600']
 
-# period_titles = ['am']
-# period_times = ['0600_0900']
+period_titles = ['am']
+period_times = ['0600_0900']
 
 # Mode type argument
 modes = ['sov', 'hov2', 'hov3', 'com', 'trk', 'apv']
@@ -39,15 +39,15 @@ output_files = ['log.txt', 'summary_log.txt', 'link_performance.csv', 'route_ass
                 'trajectory.csv']
 
 # link_type_df = pd.read_csv(os.path.join(dta_lite_wd, 'link_type_NVTA.csv'))
-net_dir = r'C:\Users\mabbas10\ASU Dropbox\Mohammad Abbasi\2. ASU\2. PhD\2. Projects\NVTA\codes\old_version\DTALite4Cube'
+net_dir = r'C:\Users\mabbas10\ASU Dropbox\Mohammad Abbasi\NVTA\codes\old_version\DTALite4Cube'
 # link_type_df = pd.read_csv(os.path.join(net_dir, 'link_type_NVTA.csv'))
 # current_dir = dta_lite_wd  # os.path.dirname(os.path.realpath(__file__))
 # network_path = dta_lite_wd  # os.path.join(current_dir, net_dir)
-network_path = r'C:\Users\mabbas10\ASU Dropbox\Mohammad Abbasi\2. ASU\2. PhD\2. Projects\NVTA\test runs\run_results\09-17\BD1\Outputs\DTALite'
+network_path = r'C:\Users\mabbas10\ASU Dropbox\Mohammad Abbasi\NVTA\test runs\run_results\09-29\demand_test_plf1'
 
-dtalite_assignment = True
+dtalite_assignment = False
 network_conversion = False
-demand_conversion = False
+demand_conversion = True
 
 if network_conversion:
     get_gmns_from_cube(network_path, period_titles, length,
@@ -84,39 +84,11 @@ for time_period, period_time in zip(period_titles, period_times):
     generate_setting_csv(output_file, assignment_dict, agent_types_dict, link_type_dict, demand_period_dict,
                          period_demand_files, vdf_type='bpr')
 
-    # setting = Settings(time_period)
-    # setting.update_dta_basic(iteration, route, simu, UE_converge, length, speed, memory_blocks)
-    # setting.update_mode(modes)
-    # setting.update_demand_periods(period_time)
-    # setting.update_demand_list(modes, time_period, scale_factor)
-    # setting.update_demand_subarea()
-    # setting.update_link_type(link_type_df)
-    # setting.update_departure_profile()
-    # setting.yaml_writer(period_time, network_path)
-
     if dtalite_assignment:
         os.chdir(network_path)
         shutil.copyfile(f'settings_{time_period}.csv', 'settings.csv')
         shutil.copyfile(f'link_{time_period}.csv', 'link.csv')
 
-        # if os.path.exists('link_qvdf.csv'):
-        #     if time_period == 'nt':  # For 'nt' period we don't have parameters for qvdf function
-        #         try:
-        #             os.remove(f'link_qvdf_{time_period}.csv')
-        #         except OSError:
-        #             try:
-        #                 os.rename('link_qvdf.csv', f'link_qvdf_{time_period}.csv')
-        #             except OSError:
-        #                 # Handle renaming error here
-        #                 pass
-        #     else:
-        #         try:
-        #             shutil.copyfile('link_qvdf_nt.csv', 'link_qvdf.csv')
-        #         except FileNotFoundError:
-        #             pass
-
-        # Run DTALite
-        # os.system(os.path.join(dta_lite_wd, 'DTALite_0416b_2024.exe'))
         os.system('DTALite_0324b.exe')
 
         # Rename the output files

@@ -160,10 +160,6 @@ def link_performanc_preprocess(network_dir, time_period_list):
 
         print("All the features are satisfied")
 
-        link_performance_csv['is_hov'] = ((link_performance_csv['TOLLGRP'] == 2) |
-                                          (link_performance_csv[f'{time_period.upper()}LIMIT'] == 2) |
-                                          (link_performance_csv[f'{time_period.upper()}LIMIT'] == 3)).astype(int)
-
         try:
             link_performance_csv['is_hov'] = (
                     (link_performance_csv['TOLLGRP'] == 2) |
@@ -220,9 +216,9 @@ def link_performanc_preprocess(network_dir, time_period_list):
                                                for time_period in time_period_list
                                                if time_period in link_performance_csv_files], axis=0)
 
-        output_dir = os.path.join(network_dir, 'link_performance_combined.csv')
-        link_performance_combined.to_csv(output_dir, index=False)
-        print(f"Combined link performance data saved to: {output_dir}")
+        # output_dir = os.path.join(network_dir, 'link_performance_combined.csv')
+        # link_performance_combined.to_csv(output_dir, index=False)
+        # print(f"Combined link performance data saved to: {output_dir}")
 
         return link_performance_combined
     else:
@@ -441,6 +437,7 @@ def performance_summary(link_performance_combined, network_dir, time_duration_di
 
     link_performance_combined_dir = os.path.join(network_dir, 'link_performance_combined_processed.csv')
     link_performance_combined.to_csv(link_performance_combined_dir, index=False)
+    print(f"Processed link performance data saved to: {link_performance_combined_dir}")
 
     aggregations = {
         'length': 'sum',

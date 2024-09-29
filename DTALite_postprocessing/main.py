@@ -13,10 +13,10 @@ import re
 # location of all the dta lite runs
 # catalog_dir = sys.argv[1]
 # scenario_folders = sys.argv[2]
-catalog_dir = r'C:\Users\mabbas10\ASU Dropbox\Mohammad Abbasi\2. ASU\2. PhD\2. Projects\NVTA\test runs\run_results\09-17'
+catalog_dir = r'C:\Users\mabbas10\ASU Dropbox\Mohammad Abbasi\NVTA\test runs\run_results\09-29'
 # scenario_folders = scenario_folders.split(',')
 # scenario_folders_list = [item.strip() for item in scenario_folders]
-scenario_folders_list = ['BD1']
+scenario_folders_list = ['DTALite_LTB1_Final_20mem_BD_TEST', 'DTALite_LTB1_Final_20mem_BD_TEST2_PLF1']
 # print(scenario_folders_list)
 
 
