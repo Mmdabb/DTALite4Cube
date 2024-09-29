@@ -26,11 +26,11 @@ length = 'mile'
 speed = 'mph'
 
 # Demand period arguement
-# period_titles = ['am', 'md', 'pm', 'nt']
-# period_times = ['0600_0900', '0900_1500', '1500_1900', '1900_0600']
+period_titles = ['am', 'md', 'pm', 'nt']
+period_times = ['0600_0900', '0900_1500', '1500_1900', '1900_0600']
 
-period_titles = ['am']
-period_times = ['0600_0900']
+# period_titles = ['am']
+# period_times = ['0600_0900']
 
 # Mode type argument
 modes = ['sov', 'hov2', 'hov3', 'com', 'trk', 'apv']
