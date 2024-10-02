@@ -39,15 +39,15 @@ output_files = ['log.txt', 'summary_log.txt', 'link_performance.csv', 'route_ass
                 'trajectory.csv']
 
 # link_type_df = pd.read_csv(os.path.join(dta_lite_wd, 'link_type_NVTA.csv'))
-net_dir = r'C:\Users\mabbas10\ASU Dropbox\Mohammad Abbasi\NVTA\codes\old_version\DTALite4Cube'
+#net_dir = r'C:\Users\mabbas10\ASU Dropbox\Mohammad Abbasi\NVTA\codes\old_version\DTALite4Cube'
 # link_type_df = pd.read_csv(os.path.join(net_dir, 'link_type_NVTA.csv'))
 # current_dir = dta_lite_wd  # os.path.dirname(os.path.realpath(__file__))
 # network_path = dta_lite_wd  # os.path.join(current_dir, net_dir)
-network_path = r'C:\Users\mabbas10\ASU Dropbox\Mohammad Abbasi\NVTA\test runs\run_results\09-29\demand_test_plf1'
+network_path = r'C:\Users\mabbas10\ASU Dropbox\Mohammad Abbasi\NVTA\codes\old_version\DTALite4Cube\LDN034_BD'
 
-dtalite_assignment = False
+dtalite_assignment = True
 network_conversion = False
-demand_conversion = True
+demand_conversion = False
 
 if network_conversion:
     get_gmns_from_cube(network_path, period_titles, length,

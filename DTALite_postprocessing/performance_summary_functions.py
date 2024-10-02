@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+import traceback
 import sys
 import numpy as np
 from datetime import datetime, timedelta
@@ -51,13 +52,17 @@ def link_performanc_preprocess(network_dir, time_period_list):
             print(f"An unexpected error occurred: {e}")
             continue
 
+        link_performance_fieldnames = list(link_performance_csv)
+        link_performance_fieldnames = [fieldname for fieldname in link_performance_fieldnames if fieldname]
+        link_performance_fieldnames_set = set(link_performance_fieldnames)
+
+        if 'time_period' not in link_performance_fieldnames_set:
+            link_performance_csv['time_period'] = time_period
+
         required_fields_list = list(link_required_fields_mapping.values())
         required_fields_list.append(f'{time_period.upper()}LIMIT')
         print(f'Cheking for required fields in link_performance_{time_period.lower()}.csv ... \n'
               f'Required fields: {required_fields_list}')
-        link_performance_fieldnames = list(link_performance_csv)
-        link_performance_fieldnames = [fieldname for fieldname in link_performance_fieldnames if fieldname]
-        link_performance_fieldnames_set = set(link_performance_fieldnames)
         required_fields = set(required_fields_list)
         columns_to_merge = []
         for required_field in required_fields:
@@ -332,6 +337,19 @@ def performance_summary(link_performance_combined, network_dir, time_duration_di
         sys.exit(f"An unexpected error occurred: {e}")
 
     try:
+        if speed_ratio_field_name not in link_performance_field_names_set:
+            link_performance_combined[speed_ratio_field_name] = link_performance_combined[speed_field_name] / np.where(
+                link_performance_combined[free_speed_field_name] > 0,
+                link_performance_combined[free_speed_field_name],
+                np.nan
+            )
+    except KeyError as e:
+        sys.exit(f"KeyError: {e}. Please check the column names.")
+    except Exception as e:
+        sys.exit(f"An unexpected error occurred: {e}")
+
+
+    try:
         # Handle NaN
         #         link_performance_combined[tt_field_name].fillna(0, inplace=True)
         #         link_performance_combined[fftt_field_name].fillna(0, inplace=True)
@@ -354,6 +372,7 @@ def performance_summary(link_performance_combined, network_dir, time_duration_di
             print(f"Warning: {len(invalid_tt_indices)} rows have negative delay (travel time < fftt)!")
             print("Row indices with invalid values:", invalid_tt_indices.tolist())
 
+
     try:
         #         link_performance_combined[person_volume_field_name] = link_performance_combined[person_volume_field_name].fillna(0)
         #         link_performance_combined['delay'] = link_performance_combined['delay'].fillna(0)
@@ -365,6 +384,7 @@ def performance_summary(link_performance_combined, network_dir, time_duration_di
         sys.exit(
             f"Error during 'person_delay' calculation: {e}. Check for non-numeric values or incompatible data types in 'delay' or {person_volume_field_name}.")
 
+
     try:
         link_performance_combined['person_hour'] = link_performance_combined[person_volume_field_name] * \
                                                    link_performance_combined[tt_field_name]
@@ -373,6 +393,7 @@ def performance_summary(link_performance_combined, network_dir, time_duration_di
     except (TypeError, ValueError) as e:
         sys.exit(
             f"Error during 'person_hour' calculation: {e}. Check for non-numeric values or incompatible data types in {tt_field_name} or {person_volume_field_name}.")
+
 
     try:
         link_performance_combined['person_mile'] = link_performance_combined[person_volume_field_name] * \
@@ -383,14 +404,16 @@ def performance_summary(link_performance_combined, network_dir, time_duration_di
         sys.exit(
             f"Error during 'person_mile' calculation: {e}. Check for non-numeric values or incompatible data types in 'length' or {person_volume_field_name}.")
 
+
     try:
         link_performance_combined['length_weighted_P'] = link_performance_combined[severe_congestion_field_name] * \
                                                          link_performance_combined['length']
     except KeyError as e:
-        sys.exit(f"KeyError: {e}. Column is missing from the link performance files")
+        print(f"KeyError: {e}. Column is missing from the link performance files")
     except (TypeError, ValueError) as e:
-        sys.exit(
+        print(
             f"Error during 'length_weighted_P' calculation: {e}. Check for non-numeric values or incompatible data types in 'length' or {severe_congestion_field_name}.")
+
 
     try:
         link_performance_combined['vehicle_mile'] = link_performance_combined[vehicle_volume_field_name] * \
@@ -401,6 +424,7 @@ def performance_summary(link_performance_combined, network_dir, time_duration_di
         sys.exit(
             f"Error during 'vehicle_mile' calculation: {e}. Check for non-numeric values or incompatible data types in 'length' or {vehicle_volume_field_name}.")
 
+
     try:
         link_performance_combined['vehicle_hour'] = link_performance_combined[vehicle_volume_field_name] * \
                                                     link_performance_combined[tt_field_name]
@@ -409,6 +433,7 @@ def performance_summary(link_performance_combined, network_dir, time_duration_di
     except (TypeError, ValueError) as e:
         sys.exit(
             f"Error during 'vehicle_hour' calculation: {e}. Check for non-numeric values or incompatible data types in 'length' or {tt_field_name}.")
+
 
     try:
         link_performance_combined['trk_vehicle_mile'] = link_performance_combined[truck_volume_field_name] * \
@@ -419,6 +444,7 @@ def performance_summary(link_performance_combined, network_dir, time_duration_di
         sys.exit(
             f"Error during trk_vehicle_mile calculation: {e}. Check for non-numeric values or incompatible data types in 'length' or {truck_volume_field_name}.")
 
+
     try:
         link_performance_combined['trk_vehicle_hour'] = link_performance_combined[truck_volume_field_name] * \
                                                         link_performance_combined[tt_field_name]
@@ -428,6 +454,7 @@ def performance_summary(link_performance_combined, network_dir, time_duration_di
         sys.exit(
             f"Error during trk_vehicle_hour calculation: {e}. Check for non-numeric values or incompatible data types in 'length' or {tt_field_name}.")
 
+
     # Create conditional mask for hov flags
     hov_flag_mask = link_performance_combined['is_hov'] == 1
     link_performance_combined['hov_delay'] = link_performance_combined['delay'].where(hov_flag_mask)
@@ -435,9 +462,11 @@ def performance_summary(link_performance_combined, network_dir, time_duration_di
     link_performance_combined['hov_person_hour'] = link_performance_combined['person_hour'].where(hov_flag_mask)
     link_performance_combined['hov_person_mile'] = link_performance_combined['person_mile'].where(hov_flag_mask)
 
+
     link_performance_combined_dir = os.path.join(network_dir, 'link_performance_combined_processed.csv')
     link_performance_combined.to_csv(link_performance_combined_dir, index=False)
     print(f"Processed link performance data saved to: {link_performance_combined_dir}")
+
 
     aggregations = {
         'length': 'sum',
@@ -458,15 +487,23 @@ def performance_summary(link_performance_combined, network_dir, time_duration_di
         'hov_person_mile': 'sum'
     }
 
+    available_columns = set(link_performance_combined.columns)
+    missing_columns = [col for col in aggregations if col not in available_columns]
+    if missing_columns:
+        print(f"Warning: Missing columns: {missing_columns}")
+
+    aggregations_filtered = {col: agg for col, agg in aggregations.items() if col in available_columns}
     aggregate_stats = {}
     if 'district_id' in link_performance_field_names_set:
         try:
             agg_by_district = link_performance_combined.groupby(['time_period', 'district_id']).agg(
-                aggregations).reset_index()
+                aggregations_filtered).reset_index()
         except AttributeError as e:
             sys.exit(f"AttributeError: Invalid DataFrame or operation: {e}")
         except KeyError as e:
-            sys.exit(f"KeyError: Column not found: {e}")
+            # sys.exit(f"KeyError: Column not found: {e}")
+            print(f"KeyError: Column not found: {e}")
+
 
         # agg_by_district['JUR_NAME'] = agg_by_district.apply(lambda x: district_id_name_mapping.setdefault(x.district_id, -1), axis=1)
         try:
@@ -474,62 +511,132 @@ def performance_summary(link_performance_combined, network_dir, time_duration_di
         except KeyError as e:
             print(f"KeyError: Missing 'district_id' in the mapping: {e}")
 
+
         try:
             agg_by_district['period_length'] = agg_by_district['time_period'].map(time_duration_dict).fillna(-1)
         except KeyError as e:
             print(f"KeyError: Missing 'time_period' in the mapping: {e}")
 
-        agg_by_district['mile_over_hour'] = agg_by_district['person_mile'] / np.where(
-            agg_by_district['person_hour'] > 0,
-            agg_by_district['person_hour'],
-            np.nan
-        )
+        try:
+            agg_by_district['mile_over_hour'] = agg_by_district['person_mile'] / np.where(
+                agg_by_district['person_hour'] > 0,
+                agg_by_district['person_hour'],
+                np.nan
+            )
+        except KeyError as e:
+            print(f"KeyError: Column not found: {e}")
 
-        agg_by_district['delay_over_hour'] = agg_by_district['person_delay'] / np.where(
-            agg_by_district['person_hour'] > 0,
-            agg_by_district['person_hour'],
-            np.nan
-        )
+        try:
+            agg_by_district['delay_over_hour'] = agg_by_district['person_delay'] / np.where(
+                agg_by_district['person_hour'] > 0,
+                agg_by_district['person_hour'],
+                np.nan
+            )
+        except KeyError as e:
+            print(f"KeyError: Column not found: {e}")
 
-        agg_by_district['severe_congestion_length_weighted'] = agg_by_district['length_weighted_P'] / np.where(
-            agg_by_district['length'] > 0,
-            agg_by_district['length'],
-            np.nan
-        )
+        try:
+            agg_by_district['severe_congestion_length_weighted'] = agg_by_district['length_weighted_P'] / np.where(
+                agg_by_district['length'] > 0,
+                agg_by_district['length'],
+                np.nan
+            )
+        except KeyError as e:
+            print(f"KeyError: Column not found: {e}")
+            if developer_mode:
+                traceback.print_exc()
+                exc_type, exc_value, exc_tb = sys.exc_info()
+                file_name = exc_tb.tb_frame.f_code.co_filename
+                line_number = exc_tb.tb_lineno
+                print(f"KeyError: {e} in file {file_name}, line {line_number}")
 
-        agg_by_district['severe_congestion_max'] = np.minimum(
-            agg_by_district[(severe_congestion_field_name, 'max')],
-            agg_by_district['period_length']
-        )
+        try:
+            agg_by_district['severe_congestion_max'] = np.minimum(
+                agg_by_district[(severe_congestion_field_name, 'max')],
+                agg_by_district['period_length']
+            )
+        except KeyError as e:
+            print(f"KeyError: Column not found: {e}")
+            if developer_mode:
+                traceback.print_exc()
+                exc_type, exc_value, exc_tb = sys.exc_info()
+                file_name = exc_tb.tb_frame.f_code.co_filename
+                line_number = exc_tb.tb_lineno
+                print(f"KeyError: {e} in file {file_name}, line {line_number}")
 
-        agg_by_district['severe_congestion_mean'] = np.minimum(
-            agg_by_district[(severe_congestion_field_name, 'mean')],
-            agg_by_district['period_length']
-        )
+        try:
+            agg_by_district['severe_congestion_mean'] = np.minimum(
+                agg_by_district[(severe_congestion_field_name, 'mean')],
+                agg_by_district['period_length']
+            )
+        except KeyError as e:
+            print(f"KeyError: Column not found: {e}")
+            if developer_mode:
+                traceback.print_exc()
+                exc_type, exc_value, exc_tb = sys.exc_info()
+                file_name = exc_tb.tb_frame.f_code.co_filename
+                line_number = exc_tb.tb_lineno
+                print(f"KeyError: {e} in file {file_name}, line {line_number}")
 
-        agg_by_district['vehicle_mile_over_hour'] = agg_by_district['vehicle_mile'] / np.where(
-            agg_by_district['vehicle_hour'] > 0,
-            agg_by_district['vehicle_hour'],
-            np.nan
-        )
+        try:
+            agg_by_district['vehicle_mile_over_hour'] = agg_by_district['vehicle_mile'] / np.where(
+                agg_by_district['vehicle_hour'] > 0,
+                agg_by_district['vehicle_hour'],
+                np.nan
+            )
+        except KeyError as e:
+            print(f"KeyError: Column not found: {e}")
+            if developer_mode:
+                traceback.print_exc()
+                exc_type, exc_value, exc_tb = sys.exc_info()
+                file_name = exc_tb.tb_frame.f_code.co_filename
+                line_number = exc_tb.tb_lineno
+                print(f"KeyError: {e} in file {file_name}, line {line_number}")
 
-        agg_by_district['trk_mile_over_hour'] = agg_by_district['trk_vehicle_mile'] / np.where(
-            agg_by_district['trk_vehicle_hour'] > 0,
-            agg_by_district['trk_vehicle_hour'],
-            np.nan
-        )
+        try:
+            agg_by_district['trk_mile_over_hour'] = agg_by_district['trk_vehicle_mile'] / np.where(
+                agg_by_district['trk_vehicle_hour'] > 0,
+                agg_by_district['trk_vehicle_hour'],
+                np.nan
+            )
+        except KeyError as e:
+            print(f"KeyError: Column not found: {e}")
+            if developer_mode:
+                traceback.print_exc()
+                exc_type, exc_value, exc_tb = sys.exc_info()
+                file_name = exc_tb.tb_frame.f_code.co_filename
+                line_number = exc_tb.tb_lineno
+                print(f"KeyError: {e} in file {file_name}, line {line_number}")
 
-        agg_by_district['hov_mile_over_hour'] = agg_by_district['hov_person_mile'] / np.where(
-            agg_by_district['hov_person_hour'] > 0,
-            agg_by_district['hov_person_hour'],
-            np.nan
-        )
+        try:
+            agg_by_district['hov_mile_over_hour'] = agg_by_district['hov_person_mile'] / np.where(
+                agg_by_district['hov_person_hour'] > 0,
+                agg_by_district['hov_person_hour'],
+                np.nan
+            )
+        except KeyError as e:
+            print(f"KeyError: Column not found: {e}")
+            if developer_mode:
+                traceback.print_exc()
+                exc_type, exc_value, exc_tb = sys.exc_info()
+                file_name = exc_tb.tb_frame.f_code.co_filename
+                line_number = exc_tb.tb_lineno
+                print(f"KeyError: {e} in file {file_name}, line {line_number}")
 
-        agg_by_district['hov_delay_over_hour'] = agg_by_district['hov_person_delay'] / np.where(
-            agg_by_district['hov_person_hour'] > 0,
-            agg_by_district['hov_person_hour'],
-            np.nan
-        )
+        try:
+            agg_by_district['hov_delay_over_hour'] = agg_by_district['hov_person_delay'] / np.where(
+                agg_by_district['hov_person_hour'] > 0,
+                agg_by_district['hov_person_hour'],
+                np.nan
+            )
+        except KeyError as e:
+            print(f"KeyError: Column not found: {e}")
+            if developer_mode:
+                traceback.print_exc()
+                exc_type, exc_value, exc_tb = sys.exc_info()
+                file_name = exc_tb.tb_frame.f_code.co_filename
+                line_number = exc_tb.tb_lineno
+                print(f"KeyError: {e} in file {file_name}, line {line_number}")
 
         aggregate_stats['district'] = agg_by_district
 
@@ -538,16 +645,18 @@ def performance_summary(link_performance_combined, network_dir, time_duration_di
     #         agg_by_district.to_csv(os.path.join(network_dir, 'agg_by_district.csv'), index=False)
 
     try:
-        agg_by_time = link_performance_combined.groupby('time_period').agg(aggregations).reset_index()
+        agg_by_time = link_performance_combined.groupby('time_period').agg(aggregations_filtered).reset_index()
     except AttributeError as e:
         sys.exit(f"AttributeError: Invalid DataFrame or operation: {e}")
     except KeyError as e:
         sys.exit(f"KeyError: Column not found: {e}")
 
+
     try:
         agg_by_time['period_length'] = agg_by_time['time_period'].map(time_duration_dict).fillna(-1)
     except KeyError as e:
-        print(f"KeyError: Missing 'time_period' in the mapping: {e}")
+        sys.exit(f"KeyError: Column not found: {e}")
+
 
     agg_by_time['mile_over_hour'] = agg_by_time['person_mile'] / np.where(
         agg_by_time['person_hour'] > 0,
@@ -561,21 +670,48 @@ def performance_summary(link_performance_combined, network_dir, time_duration_di
         np.nan
     )
 
-    agg_by_time['severe_congestion_length_weighted'] = agg_by_time['length_weighted_P'] / np.where(
-        agg_by_time['length'] > 0,
-        agg_by_time['length'],
-        np.nan
-    )
+    try:
+        agg_by_time['severe_congestion_length_weighted'] = agg_by_time['length_weighted_P'] / np.where(
+            agg_by_time['length'] > 0,
+            agg_by_time['length'],
+            np.nan
+        )
+    except KeyError as e:
+        print(f"KeyError: Column not found: {e}")
+        if developer_mode:
+            traceback.print_exc()
+            exc_type, exc_value, exc_tb = sys.exc_info()
+            file_name = exc_tb.tb_frame.f_code.co_filename
+            line_number = exc_tb.tb_lineno
+            print(f"KeyError: {e} in file {file_name}, line {line_number}")
 
-    agg_by_time['severe_congestion_max'] = np.minimum(
-        agg_by_time[(severe_congestion_field_name, 'max')],
-        agg_by_time['period_length']
-    )
+    try:
+        agg_by_time['severe_congestion_max'] = np.minimum(
+            agg_by_time[(severe_congestion_field_name, 'max')],
+            agg_by_time['period_length']
+        )
+    except KeyError as e:
+        print(f"KeyError: Column not found: {e}")
+        if developer_mode:
+            traceback.print_exc()
+            exc_type, exc_value, exc_tb = sys.exc_info()
+            file_name = exc_tb.tb_frame.f_code.co_filename
+            line_number = exc_tb.tb_lineno
+            print(f"KeyError: {e} in file {file_name}, line {line_number}")
 
-    agg_by_time['severe_congestion_mean'] = np.minimum(
-        agg_by_time[(severe_congestion_field_name, 'mean')],
-        agg_by_time['period_length']
-    )
+    try:
+        agg_by_time['severe_congestion_mean'] = np.minimum(
+            agg_by_time[(severe_congestion_field_name, 'mean')],
+            agg_by_time['period_length']
+        )
+    except KeyError as e:
+        print(f"KeyError: Column not found: {e}")
+        if developer_mode:
+            traceback.print_exc()
+            exc_type, exc_value, exc_tb = sys.exc_info()
+            file_name = exc_tb.tb_frame.f_code.co_filename
+            line_number = exc_tb.tb_lineno
+            print(f"KeyError: {e} in file {file_name}, line {line_number}")
 
     agg_by_time['vehicle_mile_over_hour'] = agg_by_time['vehicle_mile'] / np.where(
         agg_by_time['vehicle_hour'] > 0,
@@ -607,6 +743,7 @@ def performance_summary(link_performance_combined, network_dir, time_duration_di
     aggregate_stats['time'] = agg_by_time
     #     agg_by_time.to_csv(os.path.join(network_dir, 'agg_by_time.csv'), index=False)
 
+
     link_performance_combined['overall_flag'] = 1
     try:
         overall_agg = link_performance_combined.groupby('overall_flag').agg(aggregations).reset_index()
@@ -614,6 +751,7 @@ def performance_summary(link_performance_combined, network_dir, time_duration_di
         sys.exit(f"AttributeError: Invalid DataFrame or operation: {e}")
     except KeyError as e:
         sys.exit(f"KeyError: Column not found: {e}")
+
 
     overall_agg['time_period'] = 'overall'
     overall_agg['jur_name'] = 'overall'
@@ -630,19 +768,46 @@ def performance_summary(link_performance_combined, network_dir, time_duration_di
         np.nan
     )
 
-    overall_agg['severe_congestion_length_weighted'] = overall_agg['length_weighted_P'] / np.where(
-        overall_agg['length'] > 0,
-        overall_agg['length'],
-        np.nan
-    )
+    try:
+        overall_agg['severe_congestion_length_weighted'] = overall_agg['length_weighted_P'] / np.where(
+            overall_agg['length'] > 0,
+            overall_agg['length'],
+            np.nan
+        )
+    except KeyError as e:
+        print(f"KeyError: Column not found: {e}")
+        if developer_mode:
+            traceback.print_exc()
+            exc_type, exc_value, exc_tb = sys.exc_info()
+            file_name = exc_tb.tb_frame.f_code.co_filename
+            line_number = exc_tb.tb_lineno
+            print(f"KeyError: {e} in file {file_name}, line {line_number}")
 
-    overall_agg['severe_congestion_max'] = np.max(
-        agg_by_time[(severe_congestion_field_name, 'max')]
-    )
+    try:
+        overall_agg['severe_congestion_max'] = np.max(
+            agg_by_time[(severe_congestion_field_name, 'max')]
+        )
+    except KeyError as e:
+        print(f"KeyError: Column not found: {e}")
+        if developer_mode:
+            traceback.print_exc()
+            exc_type, exc_value, exc_tb = sys.exc_info()
+            file_name = exc_tb.tb_frame.f_code.co_filename
+            line_number = exc_tb.tb_lineno
+            print(f"KeyError: {e} in file {file_name}, line {line_number}")
 
-    overall_agg['severe_congestion_mean'] = np.mean(
-        agg_by_time[(severe_congestion_field_name, 'mean')]
-    )
+    try:
+        overall_agg['severe_congestion_mean'] = np.mean(
+            agg_by_time[(severe_congestion_field_name, 'mean')]
+        )
+    except KeyError as e:
+        print(f"KeyError: Column not found: {e}")
+        if developer_mode:
+            traceback.print_exc()
+            exc_type, exc_value, exc_tb = sys.exc_info()
+            file_name = exc_tb.tb_frame.f_code.co_filename
+            line_number = exc_tb.tb_lineno
+            print(f"KeyError: {e} in file {file_name}, line {line_number}")
 
     overall_agg['vehicle_mile_over_hour'] = overall_agg['vehicle_mile'] / np.where(
         overall_agg['vehicle_hour'] > 0,

@@ -8,16 +8,32 @@ link_required_fields_mapping = {
     'toll_grp': 'TOLLGRP'
 }
 
+# old version and TAPLite
 link_performance_fields_mapping = {
     'fftt': 'fftt',
     'tt': 'tt',
     'speed': 'speed',
     'speed_ratio': 'speed_ratio',
     'person_volume': 'person_volume',
+    # 'person_volume': 'volume',      # for Taplite
     'truck_volume': 'person_vol_trk',
-    'severe_congestion': 'severe_congestion_duration_in_h'
-
+    # 'truck_volume': 'mod_vol_trk',  # for Taplite
+    'severe_congestion': 'severe_congestion_duration_in_h',
+    # 'severe_congestion': 'Severe_Congestion_P'      # for TAPLite
 }
+
+
+# # New Verssion DTALite
+# link_performance_fields_mapping = {
+#     'fftt': 'fftt',
+#     'tt': 'travel_time',
+#     'speed': 'speed_mph',
+#     'speed_ratio': 'speed_ratio',
+#     'person_volume': 'person_volume',
+#     'truck_volume': 'vehicle_vol_trk',
+#     'severe_congestion': 'severe_congestion_duration_in_h'
+# }
+
 
 district_id_name_mapping = {
     2: 'Arlington',
