@@ -654,8 +654,8 @@ def get_gmns_from_cube(shapefile_path, time_period_list, length_unit='mile',
 
             vdf_bpr_dict = pd.read_csv(link_bpr_dir)
             vdf_dict = vdf_bpr_dict.set_index('VDF_code').T.to_dict()
-        else:
-            vdf_dict = NVTA_qvdf_dict
+        # else:
+        #     vdf_dict = NVTA_qvdf_dict
 
         _loadLinks(network, raw_network, time_period, time_period_list, vdf_dict, length_unit, dtalite_version_code)
         _outputLink(network, shapefile_path, time_period.lower())
