@@ -1,5 +1,7 @@
 # Field name mapping
 link_required_fields_mapping = {
+    'from_node_id': 'from_node_id',
+    'to_node_id': 'to_node_id',
     'length': 'length_in_mile',
     'free_speed': 'free_speed',
     'taz_code': 'TAZ',
@@ -8,20 +10,28 @@ link_required_fields_mapping = {
     'toll_grp': 'TOLLGRP'
 }
 
-# old version and TAPLite
+# old version
 link_performance_fields_mapping = {
     'fftt': 'fftt',
     'tt': 'tt',
     'speed': 'speed',
     'speed_ratio': 'speed_ratio',
     'person_volume': 'person_volume',
-    # 'person_volume': 'volume',      # for Taplite
     'truck_volume': 'person_vol_trk',
-    # 'truck_volume': 'mod_vol_trk',  # for Taplite
-    'severe_congestion': 'severe_congestion_duration_in_h',
-    # 'severe_congestion': 'Severe_Congestion_P'      # for TAPLite
+    'severe_congestion': 'severe_congestion_duration_in_h'
 }
 
+
+# # TAPLite
+# link_performance_fields_mapping = {
+#     'fftt': 'fftt',
+#     'tt': 'tt',
+#     'speed': 'speed',
+#     'speed_ratio': 'speed_ratio',
+#     'person_volume': 'volume',
+#     'truck_volume': 'mod_vol_trk',  # for Taplite
+#     'severe_congestion': 'Severe_Congestion_P'      # for TAPLite
+# }
 
 # # New Verssion DTALite
 # link_performance_fields_mapping = {

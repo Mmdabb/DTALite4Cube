@@ -1,16 +1,10 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Feb 23 19:16:21 2022
-
-@author: Asus
-"""
-
 import pandas as pd
 import numpy as np
 import os
-# import shutil
+import sys
 import csv
 import time
+from linkperformance_fieldconfig import link_required_fields_mapping, link_performance_fields_mapping, district_id_name_mapping
 
 
 def diff_stats(nb_link_per, nb_link, bd_link_per, bd_link, time_period, period_length, parent_dir):
