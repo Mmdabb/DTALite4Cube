@@ -82,7 +82,7 @@ for time_period, period_time in zip(period_titles, period_times):
 
     output_file = os.path.join(network_path, f'settings_{time_period}.csv')
     generate_setting_csv(output_file, assignment_dict, agent_types_dict, link_type_dict, demand_period_dict,
-                         period_demand_files, vdf_type='bpr')
+                         period_demand_files, vdf_type='qvdf')
 
     if dtalite_assignment:
         os.chdir(network_path)
