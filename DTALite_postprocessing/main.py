@@ -9,7 +9,7 @@ import os
 # location of all the dta lite runs
 # catalog_dir = sys.argv[1]
 # scenario_folders = sys.argv[2]
-catalog_dir = r'C:\Users\mabbas10\Dropbox (ASU)\NVTA\test runs\run_results\09-30\DTALite_0324b'
+catalog_dir = r'C:\Users\mabbas10\Dropbox (ASU)\NVTA\test_runs\9-2024\09-30\DTALite_0324b'
 # scenario_folders = scenario_folders.split(',')
 # scenario_folders_list = [item.strip() for item in scenario_folders]
 scenario_folders_list = ['DTALite_LTB1_Final_20mem_BD_TEST', 'DTALite_LTB1_Final_20mem_BD_TEST2_PLF1']
@@ -33,7 +33,6 @@ if __name__ == "__main__":
             sys.exit(f"Error: Directory does not exist: {catalog_dir}")
 
         time_duration_dict = time_period_duration(time_periods, time_period_duration_list)
-
         processed_link_performance_dict = {}
         for scenario in scenario_folders_list:
             network_path = os.path.join(catalog_dir, scenario, 'Outputs', 'DTALite')

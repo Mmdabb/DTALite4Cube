@@ -239,6 +239,7 @@ def link_performance_preprocess(network_dir, time_period_list, length_unit='mile
     person_volume_field_name = link_performance_fields_mapping['person_volume']
     severe_congestion_field_name = link_performance_fields_mapping['severe_congestion']
     truck_volume_field_name = link_performance_fields_mapping['truck_volume']
+    district_id_field_name = link_required_fields_mapping['district_id']
 
     if 'volume' not in link_performance_field_names_set and 'vehicle_volume' not in link_performance_field_names_set:
         sys.exit("Error: Column 'volume' or 'vehicle_volume' is missing from link performance files")
@@ -438,6 +439,71 @@ def link_performance_preprocess(network_dir, time_period_list, length_unit='mile
         sys.exit(
             f"Error during trk_vehicle_hour calculation: {e}. Check for non-numeric values or incompatible data types in 'length' or {tt_field_name}.")
 
+    # trip based pre-processing
+    try:
+        mode_type_list = ['apv', 'com', 'hov2', 'hov3', 'sov', 'trk']
+        mode_type_to_occupancy = {
+            "sov": 1,
+            "hov2": 2,
+            "hov3": 3.5,
+            "com": 1,
+            "trk": 1,
+            "apv": 1.6
+        }
+
+        if district_id_field_name not in link_performance_field_names_set:
+            raise KeyError(f"'{district_id_field_name}' column is missing from the link performance files.")
+
+        unique_district_ids = link_performance_combined[district_id_field_name].dropna().unique()
+
+        for district_id in district_id_name_mapping.keys():
+            if district_id not in unique_district_ids:
+                continue
+
+            mask = link_performance_combined[district_id_field_name].to_numpy() == district_id
+
+            total_trip_vol = np.zeros(mask.sum(), dtype=float)
+            total_veh_volume = np.zeros(mask.sum(), dtype=float)
+
+            for mode_type in mode_type_list:
+                mode_type_occupancy = mode_type_to_occupancy.get(mode_type, 1)
+                person_vol_col = f'person_vol_district_{district_id}_{mode_type}'
+
+                if person_vol_col not in link_performance_combined:
+                    raise KeyError(f"'{person_vol_col}' column is missing from the link performance files.")
+
+                person_vol_values = link_performance_combined.loc[mask, person_vol_col].fillna(0).to_numpy()
+                total_trip_vol += person_vol_values
+                total_veh_volume += person_vol_values / mode_type_occupancy
+
+            link_performance_combined.loc[mask, f'person_vol_district_{district_id}'] = total_trip_vol
+            link_performance_combined.loc[mask, f'veh_vol_district_{district_id}'] = total_veh_volume
+
+            # **Apply additional calculations only on the relevant subset**
+            delay_values = link_performance_combined.loc[mask, 'delay'].fillna(0).to_numpy()
+            tt_values = link_performance_combined.loc[mask, tt_field_name].fillna(0).to_numpy()
+            length_values = link_performance_combined.loc[mask, 'length'].fillna(0).to_numpy()
+
+            link_performance_combined.loc[mask, 'trip_person_delay'] = total_trip_vol * delay_values
+            link_performance_combined.loc[mask, 'trip_person_hour'] = total_trip_vol * tt_values
+            link_performance_combined.loc[mask, 'trip_person_mile'] = total_trip_vol * length_values
+
+            link_performance_combined.loc[mask, 'trip_vehicle_mile'] = total_veh_volume * length_values
+            link_performance_combined.loc[mask, 'trip_vehicle_hour'] = total_veh_volume * tt_values
+
+            # **Fix: Handle 'trk' separately to avoid KeyErrors**
+            truck_vol_col = f'person_vol_district_{district_id}_trk'
+            if truck_vol_col in link_performance_combined:
+                trk_values = link_performance_combined.loc[mask, truck_vol_col].fillna(0).to_numpy()
+                link_performance_combined.loc[mask, 'trip_trk_vehicle_mile'] = trk_values * length_values
+                link_performance_combined.loc[mask, 'trip_trk_vehicle_hour'] = trk_values * tt_values
+
+    except KeyError as e:
+        sys.exit(f"KeyError: {e}. Column is missing from the link performance files.")
+    except (TypeError, ValueError) as e:
+        sys.exit(
+            f"Error during calculation: {e}. Check for non-numeric values or incompatible data types in relevant fields."
+        )
 
     # Create conditional mask for hov flags
     hov_flag_mask = link_performance_combined['is_hov'] == 1
@@ -445,6 +511,9 @@ def link_performance_preprocess(network_dir, time_period_list, length_unit='mile
     link_performance_combined['hov_person_delay'] = link_performance_combined['person_delay'].where(hov_flag_mask)
     link_performance_combined['hov_person_hour'] = link_performance_combined['person_hour'].where(hov_flag_mask)
     link_performance_combined['hov_person_mile'] = link_performance_combined['person_mile'].where(hov_flag_mask)
+    link_performance_combined['trip_hov_person_delay'] = link_performance_combined['trip_person_delay'].where(hov_flag_mask)
+    link_performance_combined['trip_hov_person_hour'] = link_performance_combined['trip_person_hour'].where(hov_flag_mask)
+    link_performance_combined['trip_hov_person_mile'] = link_performance_combined['trip_person_mile'].where(hov_flag_mask)
 
 
     link_performance_combined_dir = os.path.join(network_dir, 'link_performance_combined_processed.csv')

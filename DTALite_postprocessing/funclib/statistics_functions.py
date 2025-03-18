@@ -23,7 +23,7 @@ def time_period_duration(time_period_list, period_range_list):
         time_duration = end_time - start_time
         if time_duration.days < 0:
             time_duration = time_duration + timedelta(days=1)
-        time_period_duration_dict[time_range] = time_duration.total_seconds() / 3600
+        time_period_duration_dict[period_title] = time_duration.total_seconds() / 3600
     return time_period_duration_dict
 
 
@@ -190,7 +190,18 @@ def performance_summary(link_performance_combined, network_dir, time_duration_di
         'hov_delay': 'sum',
         'hov_person_delay': 'sum',
         'hov_person_hour': 'sum',
-        'hov_person_mile': 'sum'
+        'hov_person_mile': 'sum',
+        'trip_person_delay': 'sum',
+        'trip_person_hour': 'sum',
+        'trip_person_mile': 'sum',
+        'trip_vehicle_mile': 'sum',
+        'trip_vehicle_hour': 'sum',
+        'trip_trk_vehicle_mile': 'sum',
+        'trip_trk_vehicle_hour': 'sum',
+        'trip_hov_person_delay': 'sum',
+        'trip_hov_person_hour': 'sum',
+        'trip_hov_person_mile': 'sum'
+
     }
 
     available_columns = set(link_performance_combined.columns)
@@ -209,7 +220,6 @@ def performance_summary(link_performance_combined, network_dir, time_duration_di
         except KeyError as e:
             # sys.exit(f"KeyError: Column not found: {e}")
             print(f"KeyError: Column not found: {e}")
-
 
         # agg_by_district['JUR_NAME'] = agg_by_district.apply(lambda x: district_id_name_mapping.setdefault(x.district_id, -1), axis=1)
         try:
@@ -344,6 +354,89 @@ def performance_summary(link_performance_combined, network_dir, time_duration_di
                 line_number = exc_tb.tb_lineno
                 print(f"KeyError: {e} in file {file_name}, line {line_number}")
 
+
+        # trip based stats aggregated by district id
+        #==============================================================================================================
+        try:
+            agg_by_district['trip_mile_over_hour'] = agg_by_district['trip_person_mile'] / np.where(
+                agg_by_district['trip_person_hour'] > 0,
+                agg_by_district['trip_person_hour'],
+                np.nan
+            )
+        except KeyError as e:
+            print(f"KeyError: Column not found: {e}")
+
+        try:
+            agg_by_district['trip_delay_over_hour'] = agg_by_district['trip_person_delay'] / np.where(
+                agg_by_district['trip_person_hour'] > 0,
+                agg_by_district['trip_person_hour'],
+                np.nan
+            )
+        except KeyError as e:
+            print(f"KeyError: Column not found: {e}")
+
+        try:
+            agg_by_district['trip_vehicle_mile_over_hour'] = agg_by_district['trip_vehicle_mile'] / np.where(
+                agg_by_district['trip_vehicle_hour'] > 0,
+                agg_by_district['trip_vehicle_hour'],
+                np.nan
+            )
+        except KeyError as e:
+            print(f"KeyError: Column not found: {e}")
+            if developer_mode:
+                traceback.print_exc()
+                exc_type, exc_value, exc_tb = sys.exc_info()
+                file_name = exc_tb.tb_frame.f_code.co_filename
+                line_number = exc_tb.tb_lineno
+                print(f"KeyError: {e} in file {file_name}, line {line_number}")
+
+        try:
+            agg_by_district['trip_trk_mile_over_hour'] = agg_by_district['trip_trk_vehicle_mile'] / np.where(
+                agg_by_district['trip_trk_vehicle_hour'] > 0,
+                agg_by_district['trip_trk_vehicle_hour'],
+                np.nan
+            )
+        except KeyError as e:
+            print(f"KeyError: Column not found: {e}")
+            if developer_mode:
+                traceback.print_exc()
+                exc_type, exc_value, exc_tb = sys.exc_info()
+                file_name = exc_tb.tb_frame.f_code.co_filename
+                line_number = exc_tb.tb_lineno
+                print(f"KeyError: {e} in file {file_name}, line {line_number}")
+
+        try:
+            agg_by_district['trip_hov_mile_over_hour'] = agg_by_district['trip_hov_person_mile'] / np.where(
+                agg_by_district['trip_hov_person_hour'] > 0,
+                agg_by_district['trip_hov_person_hour'],
+                np.nan
+            )
+        except KeyError as e:
+            print(f"KeyError: Column not found: {e}")
+            if developer_mode:
+                traceback.print_exc()
+                exc_type, exc_value, exc_tb = sys.exc_info()
+                file_name = exc_tb.tb_frame.f_code.co_filename
+                line_number = exc_tb.tb_lineno
+                print(f"KeyError: {e} in file {file_name}, line {line_number}")
+
+        try:
+            agg_by_district['trip_hov_delay_over_hour'] = agg_by_district['trip_hov_person_delay'] / np.where(
+                agg_by_district['trip_hov_person_hour'] > 0,
+                agg_by_district['trip_hov_person_hour'],
+                np.nan
+            )
+        except KeyError as e:
+            print(f"KeyError: Column not found: {e}")
+            if developer_mode:
+                traceback.print_exc()
+                exc_type, exc_value, exc_tb = sys.exc_info()
+                file_name = exc_tb.tb_frame.f_code.co_filename
+                line_number = exc_tb.tb_lineno
+                print(f"KeyError: {e} in file {file_name}, line {line_number}")
+
+        #==========================================================================================================
+
         aggregate_stats['district'] = agg_by_district
 
     #         print("Aggregate stats by time period and district:")
@@ -443,12 +536,50 @@ def performance_summary(link_performance_combined, network_dir, time_duration_di
         np.nan
     )
 
+    # trip based states time period aggregated
+    # =====================================================================================================
+    agg_by_time['trip_mile_over_hour'] = agg_by_time['trip_person_mile'] / np.where(
+        agg_by_time['trip_person_hour'] > 0,
+        agg_by_time['trip_person_hour'],
+        np.nan
+    )
+
+    agg_by_time['trip_delay_over_hour'] = agg_by_time['trip_person_delay'] / np.where(
+        agg_by_time['trip_person_hour'] > 0,
+        agg_by_time['trip_person_hour'],
+        np.nan
+    )
+
+    agg_by_time['trip_vehicle_mile_over_hour'] = agg_by_time['trip_vehicle_mile'] / np.where(
+        agg_by_time['trip_vehicle_hour'] > 0,
+        agg_by_time['trip_vehicle_hour'],
+        np.nan
+    )
+
+    agg_by_time['trip_trk_mile_over_hour'] = agg_by_time['trip_trk_vehicle_mile'] / np.where(
+        agg_by_time['trip_trk_vehicle_hour'] > 0,
+        agg_by_time['trip_trk_vehicle_hour'],
+        np.nan
+    )
+
+    agg_by_time['trip_hov_mile_over_hour'] = agg_by_time['trip_hov_person_mile'] / np.where(
+        agg_by_time['trip_hov_person_hour'] > 0,
+        agg_by_time['trip_hov_person_hour'],
+        np.nan
+    )
+
+    agg_by_time['trip_hov_delay_over_hour'] = agg_by_time['trip_hov_person_delay'] / np.where(
+        agg_by_time['trip_hov_person_hour'] > 0,
+        agg_by_time['trip_hov_person_hour'],
+        np.nan
+    )
+    # =======================================================================================================
+
     #     print("Aggregate stats by time period:")
     #     print(agg_by_time)
     agg_by_time['jur_name'] = 'overall'
     aggregate_stats['time'] = agg_by_time
     #     agg_by_time.to_csv(os.path.join(network_dir, 'agg_by_time.csv'), index=False)
-
 
     link_performance_combined['overall_flag'] = 1
     try:
@@ -539,6 +670,48 @@ def performance_summary(link_performance_combined, network_dir, time_duration_di
         np.nan
     )
 
+
+    # trip states overall
+    # ==================================================================================================
+    overall_agg['trip_mile_over_hour'] = overall_agg['trip_person_mile'] / np.where(
+        overall_agg['trip_person_hour'] > 0,
+        overall_agg['trip_person_hour'],
+        np.nan
+    )
+
+    overall_agg['trip_delay_over_hour'] = overall_agg['trip_person_delay'] / np.where(
+        overall_agg['trip_person_hour'] > 0,
+        overall_agg['trip_person_hour'],
+        np.nan
+    )
+
+    overall_agg['trip_vehicle_mile_over_hour'] = overall_agg['trip_vehicle_mile'] / np.where(
+        overall_agg['trip_vehicle_hour'] > 0,
+        overall_agg['trip_vehicle_hour'],
+        np.nan
+    )
+
+    overall_agg['trip_trk_mile_over_hour'] = overall_agg['trip_trk_vehicle_mile'] / np.where(
+        overall_agg['trip_trk_vehicle_hour'] > 0,
+        overall_agg['trip_trk_vehicle_hour'],
+        np.nan
+    )
+
+    overall_agg['trip_hov_mile_over_hour'] = overall_agg['trip_hov_person_mile'] / np.where(
+        overall_agg['trip_hov_person_hour'] > 0,
+        overall_agg['trip_hov_person_hour'],
+        np.nan
+    )
+
+    overall_agg['trip_hov_delay_over_hour'] = overall_agg['trip_hov_person_delay'] / np.where(
+        overall_agg['trip_hov_person_hour'] > 0,
+        overall_agg['trip_hov_person_hour'],
+        np.nan
+    )
+
+
+    # ==================================================================================================
+
     aggregate_stats['overall'] = overall_agg
 
     # overall_agg = link_performance_combined.agg(aggregations).reset_index()
@@ -557,10 +730,19 @@ def performance_summary(link_performance_combined, network_dir, time_duration_di
                                'vehicle_mile', 'vehicle_hour',
                                'vehicle_mile_over_hour', 'trk_vehicle_mile', 'trk_vehicle_hour', 'trk_mile_over_hour',
                                'hov_delay', 'hov_person_delay',
-                               'hov_person_mile', 'hov_mile_over_hour', 'hov_delay_over_hour']
+                               'hov_person_mile', 'hov_mile_over_hour', 'hov_delay_over_hour',
+                               'trip_person_delay', 'trip_person_hour', 'trip_person_mile',
+                               'trip_mile_over_hour', 'trip_delay_over_hour',
+                               'trip_vehicle_mile', 'trip_vehicle_hour',
+                               'trip_vehicle_mile_over_hour',
+                               'trip_trk_vehicle_mile', 'trip_trk_vehicle_hour',
+                               'trip_trk_mile_over_hour',
+                               'trip_hov_person_delay', 'trip_hov_person_hour', 'trip_hov_person_mile',
+                               'trip_hov_mile_over_hour', 'trip_hov_delay_over_hour'
+                               ]
     statistics_data = statistics_data[statistics_data_columns]
     statistics_data_dir = os.path.join(network_dir, 'statistics_data.csv')
-    statistics_data.to_csv(statistics_data_dir, index=False)
+    statistics_data.to_csv(statistics_data_dir, index=False, float_format="%.2f")
     print(f"Performance statistics saved to: {statistics_data_dir}")
     print('============================================================================================================')
 
